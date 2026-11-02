@@ -472,11 +472,8 @@ textarea.form-control{min-height:125px;resize:vertical}
 <script>
 
 const supabaseConfigured =
-  SUPABASE_URL.startsWith("https://") &&
-  !SUPABASE_URL.includes("https://bwwhttzgzjkerudscgwr.supabase.co/rest/v1/") &&
-  SUPABASE_ANON_KEY.length > 20 &&
-  !SUPABASE_ANON_KEY.includes("sb_publishable_nP1yQbnNhga_LjpgcWTCsQ_NgIZokat");
-
+  SUPABASE_URL === "https://bwwhttzgzjkerudscgwr.supabase.co" &&
+  SUPABASE_ANON_KEY.startsWith("sb_publishable_");
 const db = supabaseConfigured
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
