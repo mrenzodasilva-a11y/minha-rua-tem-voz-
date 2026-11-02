@@ -1088,7 +1088,90 @@ $("reportForm").addEventListener("submit",async event=>{
     showToast("Configure o Supabase antes de publicar.");
     return;
   }
-  $("reportForm").addEventListener("submit",async event=>{
+  $("reportForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const form = event.currentTarget;
+
+  if (!db) {
+    showToast("Configure o Supabase antes de publicar.");
+    return;
+  }
+
+  if (!form.reportValidity()) {
+    showToast(t("fillRequired"));
+    return;
+  }
+
+  const file = $("photo").files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    showToast(t("photoTooLarge"));
+    return;
+  }
+
+  const button = $("submitButton");
+  button.disabled = true;
+  button.textContent = "Enviando...";
+
+  try {
+    let photoUrl = null;
+
+    if (file) {
+      photoUrl = await uploadPhoto(file);
+    }
+
+    const record = {
+      title: $("title").value.trim(),
+      category: $("category").value,
+      description: $("description").value.trim(),
+      cep: $("cep").value.replace(/\D/g, ""),
+      street: $("street").value.trim(),
+      neighborhood: $("neighborhood").value.trim(),
+      city: $("city").value.trim(),
+      state: $("state").value.trim(),
+      latitude: selectedLocation?.latitude ?? null,
+      longitude: selectedLocation?.longitude ?? null,
+      photo_url: photoUrl,
+      status: "Pendente",
+      support_count: 0
+    };
+
+    const { error } = await db.from("complaints").insert(record);
+
+    if (error) throw error;
+
+    form.reset();
+
+    $("imagePreview").style.display = "none";
+    $("imagePreview").src = "";
+
+    selectedLocation = null;
+
+    if (mapMarker) {
+      map.removeLayer(mapMarker);
+      mapMarker = null;
+    }
+
+    showToast(t("published"));
+    await loadReports();
+
+    $("comunidade").scrollIntoView({
+      behavior: "smooth"
+    });f
+
+  } catch (error) {
+    console.error("ERRO AO PUBLICAR:", error);
+
+    showToast(
+      error.message || t("publishError")
+    );
+
+  } finally {
+    button.disabled = false;
+    button.textContent = t("submitButton");
+  }
+});
   const form=event.currentTarget;
   if(!form.reportValidity()){showToast(t("fillRequired"));return;}
   const file=$("photo").files[0];
