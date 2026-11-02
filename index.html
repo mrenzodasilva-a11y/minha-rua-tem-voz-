@@ -1053,7 +1053,7 @@ async function loadReports(){
     updateStats();
     return;
   }
-  const {data,error}=await db.from("complaint").select("*").order("created_at",{ascending:false}).limit(100);
+  const {data,error}=await db.from("complaints").select("*").order("created_at",{ascending:false}).limit(100);
   if(error){
   console.error("ERRO AO CARREGAR RELATOS:", error);
     $("feedGrid").innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loadingError"))}</strong>Confira a configuração do banco de dados.</div>`;
@@ -1070,7 +1070,7 @@ async function uploadPhoto(file){
   const extension=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
   const path=`${crypto.randomUUID()}.${extension}`;
 
-  const {error}=await db.storage.from("complaint-photos").upload(path,file,{
+  const {error}=await db.storage.from("complaints-photos").upload(path,file,{
     contentType:file.type,
     upsert:false
     
@@ -1078,7 +1078,7 @@ async function uploadPhoto(file){
 
   if(error)throw error;
 
-  const {data}=db.storage.from("complaint-photos").getPublicUrl(path);
+  const {data}=db.storage.from("complaints-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -1137,7 +1137,7 @@ $("reportForm").addEventListener("submit",async event=>{
       support_count: 0
     };
 
-    const { error } = await db.from("complaint").insert(record);
+    const { error } = await db.from("complaints").insert(record);
 
     if (error) throw error;
 
