@@ -1198,7 +1198,7 @@ $("reportForm").addEventListener("submit",async event=>{
       status:"Pendente",
       support_count:0
     };
-    const {error}=await db.from("complaint").insert(record);
+    const {error}=await db.from("complaints").insert(record);
     if(error)throw error;
     form.reset();
     $("imagePreview").style.display="none";
@@ -1230,7 +1230,7 @@ async function supportReport(id,button){
   if(getSupported(id)){showToast(t("alreadySupported"));return;}
   button.disabled=true;
   try{
-    const {error}=await db.rpc("support_complaint",{complaint_id:id});
+    const {error}=await db.rpc("support_complaints",{complaints_id:id});
     if(error)throw error;
     markSupported(id);
     const report=reports.find(item=>String(item.id)===String(id));
