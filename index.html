@@ -1055,7 +1055,7 @@ async function loadReports(){
   }
   const {data,error}=await db.from("complaints").select("*").order("created_at",{ascending:false}).limit(100);
   if(error){
-    console.error(error);
+  console.error("ERRO AO CARREGAR RELATOS:", error);
     $("feedGrid").innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loadingError"))}</strong>Confira a configuração do banco de dados.</div>`;
     return;
   }
