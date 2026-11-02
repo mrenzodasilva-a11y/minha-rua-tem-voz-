@@ -1066,13 +1066,19 @@ async function loadReports(){
 async function uploadPhoto(file){
   if(!file)return null;
   if(!db)throw new Error("Supabase não configurado");
+
   const extension=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
   const path=`${crypto.randomUUID()}.${extension}`;
-  const {error}=await db.storage.from("complaint-photos").upload(path,file,{
-    contentType:file.type,upsert:false
+
+  const {error}=await db.storage.from("complaints-photos").upload(path,file,{
+    contentType:file.type,
+    upsert:false
+    
   });
+
   if(error)throw error;
-  const {data}=db.storage.from("complaint-photos").getPublicUrl(path);
+
+  const {data}=db.storage.from("complaints-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -1082,6 +1088,7 @@ $("reportForm").addEventListener("submit",async event=>{
     showToast("Configure o Supabase antes de publicar.");
     return;
   }
+  $("reportForm").addEventListener("submit",async event=>{
   const form=event.currentTarget;
   if(!form.reportValidity()){showToast(t("fillRequired"));return;}
   const file=$("photo").files[0];
