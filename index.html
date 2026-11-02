@@ -1137,7 +1137,7 @@ $("reportForm").addEventListener("submit",async event=>{
       support_count: 0
     };
 
-    const { error } = await db.from("complaints").insert(record);
+    const { error } = await db.from("complaint").insert(record);
 
     if (error) throw error;
 
@@ -1198,7 +1198,7 @@ $("reportForm").addEventListener("submit",async event=>{
       status:"Pendente",
       support_count:0
     };
-    const {error}=await db.from("complaints").insert(record);
+    const {error}=await db.from("complaint").insert(record);
     if(error)throw error;
     form.reset();
     $("imagePreview").style.display="none";
