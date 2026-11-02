@@ -1125,10 +1125,10 @@ $("reportForm").addEventListener("submit",async event=>{
     showToast(t("published"));
     await loadReports();
     $("comunidade").scrollIntoView({behavior:"smooth"});
-  }catch(error){
-    console.error(error);
-    showToast(file&&error.message!=="Supabase não configurado"?t("photoUploadError"):t("publishError"));
-  }finally{
+ }catch(error){
+  console.error("ERRO AO PUBLICAR:",error);
+  showToast(error.message || "Erro desconhecido ao publicar.");
+}finally{
     button.disabled=false;
     button.textContent=t("submitButton");
   }
