@@ -99,7 +99,7 @@ a{color:inherit;text-decoration:none}
 .hero-tag{
   display:inline-block;padding:7px 14px;margin-bottom:22px;
   border:1px solid #ffffff40;border-radius:999px;color:#E2E8F0;
-  font-size:.85rem;font-weight:650
+  font-size:.75rem;font-weight:650
 }
 .hero h1{
   font-size:clamp(2rem,5.5vw,3.7rem);line-height:1.13;
@@ -333,7 +333,7 @@ textarea.form-control{min-height:125px;resize:vertical}
 <section class="section report-section" id="registrar">
   <div class="container">
     <div class="section-heading">
-      <h2 data-i18n="formHeading">Conte o que está acontecendo</h2>
+      <h2 data-i18n="formHeading">Conte o que está acontecendo.</h2>
       <p data-i18n="formSubheading">Preencha os dados abaixo. É simples e leva poucos minutos.</p>
     </div>
 
@@ -409,7 +409,7 @@ textarea.form-control{min-height:125px;resize:vertical}
             <div class="upload-box">
               <div style="font-size:1.8rem">📷</div>
               <strong data-i18n="photoTitle">Adicionar uma foto</strong>
-              <span data-i18n="photoHint">JPG, PNG ou WEBP. Até 3 MB.</span>
+              <span data-i18n="photoHint">JPG, PNG ou WEBP. Até 50 MB.</span>
               <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
             </div>
             <img id="imagePreview" class="image-preview" alt="Prévia da foto selecionada">
@@ -481,6 +481,7 @@ const db = supabaseConfigured
 
 const $ = id => document.getElementById(id);
 let reports = [];
+const pendingSupports = new Set();
 let map = null;
 let mapMarker = null;
 let selectedLocation = null;
@@ -493,7 +494,7 @@ home:"Início",report:"Registrar problema",community:"Comunidade",language:"Idio
 heroTag:"Sua comunidade, sua voz",heroTitle:"Uma cidade melhor começa com a sua voz.",
 heroText:"Registre problemas do seu bairro, apoie outras pessoas e ajude a chamar atenção para melhorias na sua comunidade.",
 heroButton:"📢 Registrar um problema",statReports:"Relatos publicados",statSupport:"Apoios da comunidade",
-formHeading:"Conte o que está acontecendo",formSubheading:"Preencha os dados abaixo. É simples e leva poucos minutos.",
+formHeading:"Conte o que está acontecendo.",formSubheading:"Preencha os dados abaixo. É simples e leva poucos minutos.",
 formTitle:"Registrar um problema",formDescription:"Descreva a situação para que outras pessoas da comunidade possam conhecer e apoiar.",
 titleLabel:"Título do problema",titlePlaceholder:"Ex.: Buraco grande na rua principal",
 categoryLabel:"Categoria",chooseCategory:"Selecione uma categoria",
@@ -555,7 +556,7 @@ comments:"Comments",writeComment:"Write a comment...",sendComment:"Send comment"
 anonymous:"Resident",loadingError:"Could not load reports.",cepInvalid:"Enter a valid 8-digit postal code.",
 cepNotFound:"Postal code not found. Check the numbers or enter the address manually.",
 cepError:"Could not look up the postal code. Try again or enter the address manually.",
-photoTooLarge:"Image must be no larger than 3 MB.",photoInvalid:"Choose a JPG, PNG or WEBP image.",
+photoTooLarge:"Image must be no larger than 50 MB.",photoInvalid:"Choose a JPG, PNG or WEBP image.",
 fillRequired:"Please fill in all required fields.",published:"Report published successfully!",
 publishError:"Could not publish. Check your connection and try again.",
 commentError:"Could not send the comment.",commentSent:"Comment sent!",supportError:"Could not register your support.",
@@ -579,7 +580,7 @@ streetLabel:"Calle o avenida",neighborhoodLabel:"Barrio",cityLabel:"Ciudad",stat
 addressNote:"📍 No necesitas el mapa para publicar. La dirección escrita es suficiente. Si quieres, puedes marcar el lugar en el mapa.",
 mapButton:"🗺️ Mostrar mapa (opcional)",mapHide:"Ocultar mapa",mapHint:"Toca el mapa para marcar la ubicación aproximada. Es opcional.",
 descriptionLabel:"Descripción",descriptionPlaceholder:"Explica qué pasó, dónde está el problema y desde cuándo...",
-photoLabel:"Foto (opcional)",photoTitle:"Añadir una foto",photoHint:"JPG, PNG o WEBP. Hasta 3 MB.",
+photoLabel:"Foto (opcional)",photoTitle:"Añadir una foto",photoHint:"JPG, PNG o WEBP. Hasta 50 MB.",
 privacyNote:"No incluyas contraseñas, documentos, teléfonos ni datos personales. Evita fotografiar rostros y matrículas.",
 submitButton:"📢 Publicar informe",feedHeading:"¿Qué pasa en tu comunidad?",
 feedSubheading:"Consulta los problemas registrados y apoya los que necesitan atención.",
@@ -590,7 +591,7 @@ pending:"Pendiente",progress:"En curso",resolved:"Resuelto",support:"Apoyar",sup
 comments:"Comentarios",writeComment:"Escribe un comentario...",sendComment:"Enviar comentario",
 noComments:"Todavía no hay comentarios.",anonymous:"Vecino",loadingError:"No se pudieron cargar los informes.",
 cepInvalid:"Introduce un código postal válido de 8 dígitos.",cepNotFound:"Código postal no encontrado. Comprueba los números o escribe la dirección manualmente.",
-cepError:"No se pudo consultar el código postal.",photoTooLarge:"La imagen debe tener un máximo de 3 MB.",
+cepError:"No se pudo consultar el código postal.",photoTooLarge:"La imagen debe tener un máximo de 50 MB.",
 photoInvalid:"Elige una imagen JPG, PNG o WEBP.",fillRequired:"Completa todos los campos obligatorios.",
 published:"¡Informe publicado correctamente!",publishError:"No se pudo publicar. Comprueba la conexión.",
 commentError:"No se pudo enviar el comentario.",commentSent:"¡Comentario enviado!",supportError:"No se pudo registrar tu apoyo.",
@@ -613,7 +614,7 @@ streetLabel:"Rue ou avenue",neighborhoodLabel:"Quartier",cityLabel:"Ville",state
 addressNote:"📍 La carte n'est pas obligatoire. L'adresse écrite suffit. Vous pouvez marquer l'endroit sur la carte si vous le souhaitez.",
 mapButton:"🗺️ Afficher la carte (facultatif)",mapHide:"Masquer la carte",mapHint:"Touchez la carte pour marquer l'emplacement approximatif.",
 descriptionLabel:"Description",descriptionPlaceholder:"Expliquez ce qui s'est passé, où se trouve le problème et depuis quand...",
-photoLabel:"Photo (facultative)",photoTitle:"Ajouter une photo",photoHint:"JPG, PNG ou WEBP. Jusqu'à 3 Mo.",
+photoLabel:"Photo (facultative)",photoTitle:"Ajouter une photo",photoHint:"JPG, PNG ou WEBP. Jusqu'à 50 Mo.",
 privacyNote:"N'incluez pas de mots de passe, documents, téléphones ou données personnelles. Évitez les visages et plaques.",
 submitButton:"📢 Publier",feedHeading:"Que se passe-t-il dans votre communauté ?",
 feedSubheading:"Consultez les problèmes signalés et soutenez ceux qui nécessitent une attention.",
@@ -624,7 +625,7 @@ pending:"En attente",progress:"En cours",resolved:"Résolu",support:"Soutenir",s
 comments:"Commentaires",writeComment:"Écrire un commentaire...",sendComment:"Envoyer",noComments:"Aucun commentaire.",
 anonymous:"Habitant",loadingError:"Impossible de charger les signalements.",
 cepInvalid:"Saisissez un code postal valide de 8 chiffres.",cepNotFound:"Code postal introuvable. Vérifiez ou saisissez l'adresse manuellement.",
-cepError:"Impossible de consulter le code postal.",photoTooLarge:"L'image doit faire 3 Mo maximum.",
+cepError:"Impossible de consulter le code postal.",photoTooLarge:"L'image doit faire 50 Mo maximum.",
 photoInvalid:"Choisissez une image JPG, PNG ou WEBP.",fillRequired:"Remplissez tous les champs obligatoires.",
 published:"Signalement publié !",publishError:"Publication impossible. Vérifiez votre connexion.",
 commentError:"Impossible d'envoyer le commentaire.",commentSent:"Commentaire envoyé !",supportError:"Impossible d'enregistrer votre soutien.",
@@ -647,7 +648,7 @@ streetLabel:"Straße oder Allee",neighborhoodLabel:"Stadtteil",cityLabel:"Stadt"
 addressNote:"📍 Die Karte ist nicht erforderlich. Die schriftliche Adresse reicht aus. Du kannst den Ort optional auf der Karte markieren.",
 mapButton:"🗺️ Karte anzeigen (optional)",mapHide:"Karte ausblenden",mapHint:"Tippe auf die Karte, um den ungefähren Ort zu markieren.",
 descriptionLabel:"Beschreibung",descriptionPlaceholder:"Erkläre, was passiert ist, wo das Problem liegt und seit wann...",
-photoLabel:"Foto (optional)",photoTitle:"Foto hinzufügen",photoHint:"JPG, PNG oder WEBP. Bis zu 3 MB.",
+photoLabel:"Foto (optional)",photoTitle:"Foto hinzufügen",photoHint:"JPG, PNG oder WEBP. Bis zu 50 MB.",
 privacyNote:"Keine Passwörter, Dokumente, Telefonnummern oder persönlichen Daten angeben. Gesichter und Kennzeichen vermeiden.",
 submitButton:"📢 Meldung veröffentlichen",feedHeading:"Was passiert in deiner Gemeinschaft?",
 feedSubheading:"Sieh dir gemeldete Probleme an und unterstütze wichtige Anliegen.",
@@ -658,7 +659,7 @@ pending:"Ausstehend",progress:"In Bearbeitung",resolved:"Gelöst",support:"Unter
 comments:"Kommentare",writeComment:"Kommentar schreiben...",sendComment:"Senden",noComments:"Noch keine Kommentare.",
 anonymous:"Einwohner",loadingError:"Meldungen konnten nicht geladen werden.",
 cepInvalid:"Bitte eine gültige achtstellige Postleitzahl eingeben.",cepNotFound:"Postleitzahl nicht gefunden. Prüfe sie oder gib die Adresse manuell ein.",
-cepError:"Postleitzahl konnte nicht abgefragt werden.",photoTooLarge:"Das Bild darf höchstens 3 MB groß sein.",
+cepError:"Postleitzahl konnte nicht abgefragt werden.",photoTooLarge:"Das Bild darf höchstens 50 MB groß sein.",
 photoInvalid:"Bitte JPG, PNG oder WEBP auswählen.",fillRequired:"Bitte alle Pflichtfelder ausfüllen.",
 published:"Meldung erfolgreich veröffentlicht!",publishError:"Veröffentlichung fehlgeschlagen. Prüfe deine Verbindung.",
 commentError:"Kommentar konnte nicht gesendet werden.",commentSent:"Kommentar gesendet!",supportError:"Unterstützung konnte nicht gespeichert werden.",
@@ -681,7 +682,7 @@ streetLabel:"Via o viale",neighborhoodLabel:"Quartiere",cityLabel:"Città",state
 addressNote:"📍 La mappa non è obbligatoria. L'indirizzo scritto è sufficiente. Puoi segnare il luogo sulla mappa se vuoi.",
 mapButton:"🗺️ Mostra mappa (facoltativo)",mapHide:"Nascondi mappa",mapHint:"Tocca la mappa per segnare la posizione approssimativa.",
 descriptionLabel:"Descrizione",descriptionPlaceholder:"Spiega cosa è successo, dove si trova il problema e da quanto tempo...",
-photoLabel:"Foto (facoltativa)",photoTitle:"Aggiungi una foto",photoHint:"JPG, PNG o WEBP. Fino a 3 MB.",
+photoLabel:"Foto (facoltativa)",photoTitle:"Aggiungi una foto",photoHint:"JPG, PNG o WEBP. Fino a 50 MB.",
 privacyNote:"Non inserire password, documenti, telefoni o dati personali. Evita volti e targhe.",
 submitButton:"📢 Pubblica segnalazione",feedHeading:"Cosa succede nella tua comunità?",
 feedSubheading:"Consulta i problemi segnalati e sostieni quelli che richiedono attenzione.",
@@ -692,7 +693,7 @@ pending:"In attesa",progress:"In corso",resolved:"Risolto",support:"Sostieni",su
 comments:"Commenti",writeComment:"Scrivi un commento...",sendComment:"Invia",noComments:"Ancora nessun commento.",
 anonymous:"Residente",loadingError:"Impossibile caricare le segnalazioni.",
 cepInvalid:"Inserisci un CAP valido di 8 cifre.",cepNotFound:"CAP non trovato. Controlla o inserisci l'indirizzo manualmente.",
-cepError:"Impossibile consultare il CAP.",photoTooLarge:"L'immagine deve essere al massimo di 3 MB.",
+cepError:"Impossibile consultare il CAP.",photoTooLarge:"L'immagine deve essere al massimo di 50 MB.",
 photoInvalid:"Scegli un'immagine JPG, PNG o WEBP.",fillRequired:"Compila tutti i campi obbligatori.",
 published:"Segnalazione pubblicata!",publishError:"Pubblicazione non riuscita. Controlla la connessione.",
 commentError:"Impossibile inviare il commento.",commentSent:"Commento inviato!",supportError:"Impossibile registrare il sostegno.",
@@ -714,7 +715,7 @@ streetLabel:"街道",neighborhoodLabel:"社区",cityLabel:"城市",stateLabel:"�
 addressNote:"📍 发布不需要地图。填写文字地址即可。你也可以选择在地图上标记位置。",
 mapButton:"🗺️ 显示地图（可选）",mapHide:"隐藏地图",mapHint:"点击地图标记问题的大致位置。此操作不是必需的。",
 descriptionLabel:"描述",descriptionPlaceholder:"说明发生了什么、问题在哪里以及持续了多久……",
-photoLabel:"照片（可选）",photoTitle:"添加照片",photoHint:"JPG、PNG 或 WEBP，最大 3 MB。",
+photoLabel:"照片（可选）",photoTitle:"添加照片",photoHint:"JPG、PNG 或 WEBP，最大 50 MB。",
 privacyNote:"请勿填写密码、证件、电话号码或个人信息。避免拍摄人脸和车牌。",
 submitButton:"📢 发布报告",feedHeading:"你的社区发生了什么？",
 feedSubheading:"查看已报告的问题，并支持需要关注的事项。",
@@ -724,7 +725,7 @@ footerText:"积极参与的社区始于信息与合作。",pending:"待处理",p
 resolved:"已解决",support:"支持",supported:"已支持",comments:"评论",writeComment:"写评论……",
 sendComment:"发送",noComments:"暂无评论。",anonymous:"居民",loadingError:"无法加载报告。",
 cepInvalid:"请输入有效的 8 位邮政编码。",cepNotFound:"未找到邮政编码。请检查或手动填写地址。",
-cepError:"无法查询邮政编码。",photoTooLarge:"图片不能超过 3 MB。",
+cepError:"无法查询邮政编码。",photoTooLarge:"图片不能超过 50 MB。",
 photoInvalid:"请选择 JPG、PNG 或 WEBP 图片。",fillRequired:"请填写所有必填项。",
 published:"报告发布成功！",publishError:"无法发布，请检查网络连接。",
 commentError:"无法发送评论。",commentSent:"评论已发送！",supportError:"无法记录支持。",
@@ -747,7 +748,7 @@ streetLabel:"通り・道路",neighborhoodLabel:"地域",cityLabel:"市区町村
 addressNote:"📍 投稿に地図は必要ありません。住所の入力だけで十分です。必要なら地図に場所を記せます。",
 mapButton:"🗺️ 地図を表示（任意）",mapHide:"地図を隠す",mapHint:"地図をタップしておおよその場所を指定できます。任意です。",
 descriptionLabel:"説明",descriptionPlaceholder:"何が起きたか、問題の場所、いつから続いているかを説明してください……",
-photoLabel:"写真（任意）",photoTitle:"写真を追加",photoHint:"JPG、PNG、WEBP。最大3MB。",
+photoLabel:"写真（任意）",photoTitle:"写真を追加",photoHint:"JPG、PNG、WEBP。最大50 MB。",
 privacyNote:"パスワード、書類、電話番号、個人情報を入力しないでください。顔や車のナンバーの撮影は避けてください。",
 submitButton:"📢 報告を投稿",feedHeading:"地域で何が起きていますか？",
 feedSubheading:"報告された問題を確認し、支援が必要なものを応援しましょう。",
@@ -758,7 +759,7 @@ pending:"未対応",progress:"対応中",resolved:"解決済み",support:"応援
 comments:"コメント",writeComment:"コメントを書く……",sendComment:"送信",noComments:"まだコメントはありません。",
 anonymous:"住民",loadingError:"報告を読み込めませんでした。",cepInvalid:"8桁の郵便番号を入力してください。",
 cepNotFound:"郵便番号が見つかりません。確認するか住所を手入力してください。",
-cepError:"郵便番号を検索できませんでした。",photoTooLarge:"画像は3MB以下にしてください。",
+cepError:"郵便番号を検索できませんでした。",photoTooLarge:"画像は50 MB以下にしてください。",
 photoInvalid:"JPG、PNG、WEBP画像を選択してください。",fillRequired:"必須項目をすべて入力してください。",
 published:"報告を投稿しました！",publishError:"投稿できませんでした。接続を確認してください。",
 commentError:"コメントを送信できませんでした。",commentSent:"コメントを送信しました！",
@@ -781,7 +782,7 @@ streetLabel:"सड़क",neighborhoodLabel:"इलाका",cityLabel:"शह
 addressNote:"📍 रिपोर्ट प्रकाशित करने के लिए नक्शा ज़रूरी नहीं है। लिखा हुआ पता पर्याप्त है। चाहें तो नक्शे पर स्थान चुनें।",
 mapButton:"🗺️ नक्शा दिखाएँ (वैकल्पिक)",mapHide:"नक्शा छिपाएँ",mapHint:"समस्या का अनुमानित स्थान चुनने के लिए नक्शे पर टैप करें।",
 descriptionLabel:"विवरण",descriptionPlaceholder:"बताएँ क्या हुआ, समस्या कहाँ है और कब से है...",
-photoLabel:"फोटो (वैकल्पिक)",photoTitle:"फोटो जोड़ें",photoHint:"JPG, PNG या WEBP। अधिकतम 3 MB।",
+photoLabel:"फोटो (वैकल्पिक)",photoTitle:"फोटो जोड़ें",photoHint:"JPG, PNG या WEBP। अधिकतम 50 MB।",
 privacyNote:"पासवर्ड, दस्तावेज़, फोन नंबर या निजी जानकारी न लिखें। चेहरों और वाहन नंबर प्लेट की तस्वीर लेने से बचें।",
 submitButton:"📢 रिपोर्ट प्रकाशित करें",feedHeading:"आपके समुदाय में क्या हो रहा है?",
 feedSubheading:"दर्ज समस्याएँ देखें और ज़रूरी मुद्दों का समर्थन करें।",
@@ -792,7 +793,7 @@ pending:"लंबित",progress:"काम जारी",resolved:"हल ह
 comments:"टिप्पणियाँ",writeComment:"टिप्पणी लिखें...",sendComment:"भेजें",noComments:"अभी कोई टिप्पणी नहीं।",
 anonymous:"निवासी",loadingError:"रिपोर्ट लोड नहीं हो सकीं।",cepInvalid:"8 अंकों का सही पिन कोड दर्ज करें।",
 cepNotFound:"पिन कोड नहीं मिला। जाँचें या पता स्वयं लिखें।",cepError:"पिन कोड खोजा नहीं जा सका।",
-photoTooLarge:"फोटो अधिकतम 3 MB की होनी चाहिए।",photoInvalid:"JPG, PNG या WEBP चुनें।",
+photoTooLarge:"फोटो अधिकतम 50 MB की होनी चाहिए।",photoInvalid:"JPG, PNG या WEBP चुनें।",
 fillRequired:"सभी ज़रूरी फ़ील्ड भरें।",published:"रिपोर्ट सफलतापूर्वक प्रकाशित हुई!",
 publishError:"प्रकाशित नहीं हो सका। इंटरनेट कनेक्शन जाँचें।",commentError:"टिप्पणी भेजी नहीं जा सकी।",
 commentSent:"टिप्पणी भेज दी गई!",supportError:"समर्थन दर्ज नहीं हो सका।",
@@ -923,7 +924,7 @@ $("photo").addEventListener("change",()=>{
     showToast(t("photoInvalid"));
     return;
   }
-  if(file.size>3*1024*1024){
+  if(file.size>50*1024*1024){
     $("photo").value="";
     preview.style.display="none";
     showToast(t("photoTooLarge"));
@@ -1001,6 +1002,10 @@ function renderFeed(){
     const text=[item.title,item.description,item.street,item.neighborhood,item.city,item.category]
       .join(" ").toLocaleLowerCase();
     return (!search||text.includes(search))&&(!category||item.category===category);
+  }).sort((a,b)=>{
+    const supportDifference=(Number(b.support_count)||0)-(Number(a.support_count)||0);
+    if(supportDifference!==0)return supportDifference;
+    return new Date(b.created_at||0)-new Date(a.created_at||0);
   });
   $("feedCount").textContent=`${filtered.length} ${currentLanguage==="pt"?"relato(s) encontrado(s)": "report(s)"}`;
   const grid=$("feedGrid");
@@ -1084,105 +1089,31 @@ async function uploadPhoto(file){
 
 $("reportForm").addEventListener("submit",async event=>{
   event.preventDefault();
+  const form=event.currentTarget;
+
   if(!db){
     showToast("Configure o Supabase antes de publicar.");
     return;
   }
-  $("reportForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  const form = event.currentTarget;
-
-  if (!db) {
-    showToast("Configure o Supabase antes de publicar.");
-    return;
-  }
-
-  if (!form.reportValidity()) {
+  if(!form.reportValidity()){
     showToast(t("fillRequired"));
     return;
   }
 
-  const file = $("photo").files[0];
-
-  if (file && file.size > 3 * 1024 * 1024) {
+  const file=$("photo").files[0];
+  if(file&&file.size>50*1024*1024){
     showToast(t("photoTooLarge"));
     return;
   }
 
-  const button = $("submitButton");
-  button.disabled = true;
-  button.textContent = "Enviando...";
-
-  try {
-    let photoUrl = null;
-
-    if (file) {
-      photoUrl = await uploadPhoto(file);
-    }
-
-    const record = {
-      title: $("title").value.trim(),
-      category: $("category").value,
-      description: $("description").value.trim(),
-      cep: $("cep").value.replace(/\D/g, ""),
-      street: $("street").value.trim(),
-      neighborhood: $("neighborhood").value.trim(),
-      city: $("city").value.trim(),
-      state: $("state").value.trim(),
-      latitude: selectedLocation?.latitude ?? null,
-      longitude: selectedLocation?.longitude ?? null,
-      photo_url: photoUrl,
-      status: "Pendente",
-      support_count: 0
-    };
-
-    const { error } = await db.from("complaints").insert(record);
-
-    if (error) throw error;
-
-    form.reset();
-
-    $("imagePreview").style.display = "none";
-    $("imagePreview").src = "";
-
-    selectedLocation = null;
-
-    if (mapMarker) {
-      map.removeLayer(mapMarker);
-      mapMarker = null;
-    }
-
-    showToast(t("published"));
-    await loadReports();
-
-    $("comunidade").scrollIntoView({
-      behavior: "smooth"
-    });f
-
-  } catch (error) {
-    console.error("ERRO AO PUBLICAR:", error);
-
-    showToast(
-      error.message || t("publishError")
-    );
-
-  } finally {
-    button.disabled = false;
-    button.textContent = t("submitButton");
-  }
-});
-  const form=event.currentTarget;
-  if(!form.reportValidity()){showToast(t("fillRequired"));return;}
-  const file=$("photo").files[0];
-  if(file&&file.size>3*1024*1024){showToast(t("photoTooLarge"));return;}
-
   const button=$("submitButton");
   button.disabled=true;
   button.textContent="Enviando...";
+
   try{
     let photoUrl=null;
     if(file)photoUrl=await uploadPhoto(file);
+
     const record={
       title:$("title").value.trim(),
       category:$("category").value,
@@ -1198,20 +1129,27 @@ $("reportForm").addEventListener("submit",async event=>{
       status:"Pendente",
       support_count:0
     };
+
     const {error}=await db.from("complaints").insert(record);
     if(error)throw error;
+
     form.reset();
     $("imagePreview").style.display="none";
     $("imagePreview").src="";
     selectedLocation=null;
-    if(mapMarker){map.removeLayer(mapMarker);mapMarker=null;}
+
+    if(mapMarker){
+      map.removeLayer(mapMarker);
+      mapMarker=null;
+    }
+
     showToast(t("published"));
     await loadReports();
     $("comunidade").scrollIntoView({behavior:"smooth"});
- }catch(error){
-  console.error("ERRO AO PUBLICAR:",error);
-  showToast(error.message || "Erro desconhecido ao publicar.");
-}finally{
+  }catch(error){
+    console.error("ERRO AO PUBLICAR:",error);
+    showToast(error.message||t("publishError"));
+  }finally{
     button.disabled=false;
     button.textContent=t("submitButton");
   }
@@ -1227,19 +1165,31 @@ $("feedGrid").addEventListener("click",async event=>{
 
 async function supportReport(id,button){
   if(!db){showToast(t("supportError"));return;}
-  if(getSupported(id)){showToast(t("alreadySupported"));return;}
+  if(getSupported(id)){
+    button.disabled=true;
+    showToast(t("alreadySupported"));
+    return;
+  }
+  if(pendingSupports.has(String(id)))return;
+
+  // Desativa imediatamente para impedir cliques repetidos enquanto o servidor responde.
+  pendingSupports.add(String(id));
   button.disabled=true;
+
   try{
-    const {error}=await db.rpc("support_complaints",{complaints_id:id});
+    const {error}=await db.rpc("support_complaint",{complaint_id:id});
     if(error)throw error;
+
     markSupported(id);
     const report=reports.find(item=>String(item.id)===String(id));
     if(report)report.support_count=(Number(report.support_count)||0)+1;
     renderFeed();
   }catch(error){
-    console.error(error);
+    console.error("ERRO AO APOIAR:",error);
     showToast(t("supportError"));
     button.disabled=false;
+  }finally{
+    pendingSupports.delete(String(id));
   }
 }
 
