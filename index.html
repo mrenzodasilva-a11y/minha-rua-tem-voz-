@@ -74,6 +74,16 @@ button:disabled{cursor:default}
   radial-gradient(700px 500px at -10% 110%,rgba(33,80,138,.9),transparent 60%),
   linear-gradient(160deg,var(--navy) 0%,#0B2140 100%)}
 .hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:linear-gradient(180deg,#000 30%,transparent 95%);mask-image:linear-gradient(180deg,#000 30%,transparent 95%)}
+/* Efeito "lanterna": as linhas do quadriculado acendem perto do mouse */
+.hero-glow{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s ease;
+  background-image:
+    linear-gradient(rgba(255,180,138,.32) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,180,138,.32) 1px,transparent 1px),
+    radial-gradient(circle 280px at var(--mx,50%) var(--my,50%),rgba(224,112,58,.14),transparent 70%);
+  background-size:44px 44px,44px 44px,100% 100%;
+  -webkit-mask-image:radial-gradient(circle 230px at var(--mx,50%) var(--my,50%),#000 0%,rgba(0,0,0,.35) 45%,transparent 100%);
+  mask-image:radial-gradient(circle 230px at var(--mx,50%) var(--my,50%),#000 0%,rgba(0,0,0,.35) 45%,transparent 100%)}
+.hero.glow-on .hero-glow{opacity:1}
 .hero-grid{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:84px 0 96px}
 .pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:.82rem;font-weight:600}
 .pill .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 4px rgba(74,222,128,.2)}
@@ -393,6 +403,7 @@ textarea.input{min-height:110px;resize:vertical}
 <main>
 <!-- ============ HERO ============ -->
 <section class="hero" id="inicio">
+  <div class="hero-glow" aria-hidden="true"></div>
   <div class="container hero-grid">
     <div>
       <span class="pill"><span class="dot"></span> <span data-i18n="heroPill">Plataforma comunitária de Campo Largo</span></span>
@@ -1675,6 +1686,26 @@ $("menuBtn").addEventListener("click", () => {
 $("navLinks").addEventListener("click", e => {
   if(e.target.closest("a")){ $("navLinks").classList.remove("open"); $("menuBtn").setAttribute("aria-expanded", "false"); }
 });
+/* Efeito "lanterna" no quadriculado do topo (só com mouse; desligado no celular e para quem prefere menos animação) */
+(function(){
+  const hero = document.querySelector(".hero");
+  if(!hero || !window.matchMedia) return;
+  if(!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let frame = null, x = 0, y = 0;
+  hero.addEventListener("pointermove", e => {
+    const rect = hero.getBoundingClientRect();
+    x = e.clientX - rect.left; y = e.clientY - rect.top;
+    if(!frame) frame = requestAnimationFrame(() => {
+      hero.style.setProperty("--mx", x + "px");
+      hero.style.setProperty("--my", y + "px");
+      frame = null;
+    });
+    hero.classList.add("glow-on");
+  });
+  hero.addEventListener("pointerleave", () => hero.classList.remove("glow-on"));
+})();
+
 if("IntersectionObserver" in window){
   const io = new IntersectionObserver(entries => entries.forEach(en => {
     if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
