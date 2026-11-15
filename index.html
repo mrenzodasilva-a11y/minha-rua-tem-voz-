@@ -3,32 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1A365D">
-<meta name="description" content="Minha Rua Tem Voz: um espaço para registrar problemas do bairro e apoiar melhorias na comunidade.">
-<title>Minha Rua Tem Voz | Fórum Comunitário</title>
-
+<meta name="theme-color" content="#0F2A4A">
+<meta name="description" content="Minha Rua Tem Voz: plataforma comunitária de Campo Largo para registrar problemas do bairro, apoiar outros moradores e mostrar o que é prioridade.">
+<title>Minha Rua Tem Voz | Campo Largo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
 <style>
-:root {
-  --azul:#1A365D;
-  --azul-hover:#122847;
-  --fundo:#F7FAFC;
-  --branco:#fff;
-  --laranja:#DD6B20;
-  --laranja-hover:#C05621;
-  --texto:#2D3748;
-  --suave:#718096;
-  --borda:#E2E8F0;
-  --verde:#276749;
-  --verde-fundo:#C6F6D5;
-  --amarelo:#975A16;
-  --amarelo-fundo:#FEEBC8;
-  --vermelho:#9B2C2C;
-  --vermelho-fundo:#FED7D7;
-  --raio:14px;
-  --sombra:0 8px 28px rgba(26,54,93,.08);
-}
 /* O Windows não tem desenhos de bandeiras na fonte de emojis (mostra "BR" no lugar de 🇧🇷).
    Esta fonte contém só as bandeiras e só é usada para esses caracteres. */
 @font-face{
@@ -37,438 +19,649 @@
   unicode-range:U+1F1E6-1F1FF,U+1F3F4,U+E0062-E0063,U+E0065,U+E0067,U+E006C,U+E006E,U+E0073-E0074,U+E0077,U+E007F;
   font-display:swap;
 }
+:root{
+  --navy:#0F2A4A;--navy-2:#173B66;--navy-3:#21508A;
+  --clay:#E0703A;--clay-dark:#C55A27;--clay-soft:#FCEBE1;
+  --green:#1F9D6B;--green-soft:#E3F5EC;
+  --amber:#D99A2B;--amber-soft:#FBF1DC;
+  --ink:#14202E;--muted:#5B6B7C;--line:#E7E2D9;
+  --bg:#F7F5F1;--card:#FFFFFF;
+  --radius:18px;
+  --shadow:0 1px 2px rgba(15,42,74,.06),0 10px 30px rgba(15,42,74,.08);
+  --shadow-lg:0 30px 60px rgba(15,42,74,.18);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:90px}
-body{
-  font-family:"Twemoji Country Flags",system-ui,-apple-system,"Segoe UI",sans-serif;
-  background:var(--fundo);color:var(--texto);line-height:1.6
-}
-button,input,select,textarea{font:inherit}
-button,a{-webkit-tap-highlight-color:transparent}
-button{cursor:pointer}
-a{color:inherit;text-decoration:none}
-.container{width:min(1120px,92%);margin:auto}
-.section{padding:70px 0}
-.section-heading{text-align:center;margin-bottom:35px}
-.section-heading h2{
-  color:var(--azul);font-size:clamp(1.65rem,4vw,2.3rem);
-  line-height:1.2;margin-bottom:12px
-}
-.section-heading p{color:var(--suave);max-width:650px;margin:auto}
-.header{
-  background:var(--branco);border-bottom:1px solid var(--borda);
-  position:sticky;top:0;z-index:1000
-}
-.navbar{
-  min-height:76px;display:flex;align-items:center;
-  justify-content:space-between;gap:20px
-}
-.logo{
-  display:flex;align-items:center;gap:10px;color:var(--azul);
-  font-size:1.12rem;font-weight:800;letter-spacing:-.4px
-}
-.logo-icon{
-  display:grid;place-items:center;width:42px;height:42px;
-  border-radius:12px;background:var(--azul);color:white;font-size:1.3rem
-}
-.nav-links{display:flex;align-items:center;gap:26px;list-style:none}
-.nav-links a{font-size:.94rem;font-weight:650}
-.nav-links a:hover{color:var(--laranja)}
-.menu-toggle{
-  display:none;border:1px solid var(--borda);border-radius:8px;
-  padding:8px 12px;background:white;color:var(--azul);font-size:1.3rem
-}
-.language-select{
-  padding:9px;border:1px solid var(--borda);border-radius:8px;
-  color:var(--azul);background:white;max-width:150px
-}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:13px 22px;border:0;border-radius:9px;font-weight:750;
-  text-align:center;transition:.2s
-}
-.btn:hover{transform:translateY(-1px)}
-.btn-primary{background:var(--laranja);color:white}
-.btn-primary:hover{background:var(--laranja-hover)}
-.btn-blue{background:var(--azul);color:white}
-.btn-blue:hover{background:var(--azul-hover)}
-.btn-outline{border:1px solid var(--borda);background:white;color:var(--azul)}
-.hero{
-  position:relative;overflow:hidden;padding:90px 0 100px;
-  background:var(--azul);color:white;text-align:center
-}
-.hero:before,.hero:after{
-  content:"";position:absolute;border:1px solid #ffffff18;
-  border-radius:50%;pointer-events:none
-}
-.hero:before{width:360px;height:360px;top:-200px;left:-100px}
-.hero:after{width:450px;height:450px;bottom:-300px;right:-100px}
-.hero-content{position:relative;z-index:1;max-width:820px;margin:auto}
-.hero-tag{
-  display:inline-block;padding:7px 14px;margin-bottom:22px;
-  border:1px solid #ffffff40;border-radius:999px;color:#E2E8F0;
-  font-size:.75rem;font-weight:650
-}
-.hero h1{
-  font-size:clamp(2rem,5.5vw,3.7rem);line-height:1.13;
-  letter-spacing:-1.3px;margin-bottom:20px
-}
-.hero p{max-width:650px;margin:0 auto 30px;color:#E2E8F0;font-size:1.08rem}
-.hero .btn{padding:15px 26px;font-size:1rem}
-.hero-stats{display:flex;justify-content:center;flex-wrap:wrap;gap:36px;margin-top:44px}
-.stat{min-width:110px}
-.stat strong{display:block;font-size:1.6rem}
-.stat span{color:#CBD5E0;font-size:.88rem}
-.report-section{padding-top:70px}
-.form-card{
-  max-width:820px;margin:auto;padding:clamp(22px,5vw,42px);
-  background:white;border:1px solid var(--borda);
-  border-radius:var(--raio);box-shadow:var(--sombra)
-}
-.form-title{color:var(--azul);font-size:1.45rem;margin-bottom:7px}
-.form-description{color:var(--suave);font-size:.94rem;margin-bottom:28px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.form-group{display:flex;flex-direction:column;gap:7px;min-width:0}
-.form-group.full-width{grid-column:1/-1}
-.form-group label{color:var(--azul);font-size:.94rem;font-weight:750}
-.required{color:var(--laranja)}
-.form-control{
-  width:100%;min-width:0;padding:13px 14px;
-  border:1px solid #CBD5E0;border-radius:8px;
-  background:white;color:var(--texto);outline:none
-}
-.form-control:focus{border-color:var(--azul);box-shadow:0 0 0 3px #1A365D20}
-.form-control::placeholder{color:#A0AEC0}
-textarea.form-control{min-height:125px;resize:vertical}
-.field-hint{color:var(--suave);font-size:.83rem}
-.address-note{
-  padding:14px;border-radius:9px;background:#EDF2F7;
-  color:var(--azul);font-size:.9rem
-}
-.cep-row{display:flex;gap:8px}
-.cep-row input{flex:1;min-width:0}
-.upload-box{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;padding:22px;border:2px dashed #CBD5E0;border-radius:10px;
-  background:var(--fundo);text-align:center
-}
-.upload-box strong{color:var(--azul)}
-.upload-box span{color:var(--suave);font-size:.83rem}
-.upload-box input{max-width:100%;font-size:.85rem}
-.image-preview{
-  display:none;max-width:100%;max-height:220px;margin:12px auto 0;
-  border-radius:8px;object-fit:contain
-}
-.map-toggle{
-  width:100%;padding:13px;border:1px solid var(--borda);
-  border-radius:9px;background:white;color:var(--azul);font-weight:750
-}
-#map{
-  display:none;width:100%;height:280px;margin-top:12px;
-  border-radius:10px;z-index:1
-}
-.map-hint{font-size:.82rem;color:var(--suave);margin-top:7px}
-.form-footer{
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:16px;margin-top:25px;padding-top:22px;
-  border-top:1px solid var(--borda)
-}
-.privacy-note{max-width:380px;color:var(--suave);font-size:.82rem}
-.feed-section{background:#EDF2F7}
-.feed-toolbar{
-  display:flex;justify-content:space-between;align-items:center;
-  flex-wrap:wrap;gap:15px;margin-bottom:25px
-}
-.feed-count{color:var(--suave);font-size:.92rem}
-.feed-filters{display:flex;gap:10px;flex-wrap:wrap}
-.filter-select{
-  min-width:160px;max-width:100%;padding:11px;
-  border:1px solid var(--borda);border-radius:8px;
-  background:white;color:var(--azul)
-}
-.feed-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
-.issue-card{
-  display:flex;flex-direction:column;min-width:0;padding:23px;
-  border:1px solid var(--borda);border-radius:var(--raio);
-  background:white;box-shadow:0 4px 16px #1A365D0A;overflow-wrap:anywhere
-}
-.card-top{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  flex-wrap:wrap;gap:10px;margin-bottom:14px
-}
-.category-label{
-  color:var(--azul);font-size:.82rem;font-weight:800;
-  text-transform:uppercase;letter-spacing:.4px
-}
-.status{
-  display:inline-flex;padding:5px 10px;border-radius:999px;
-  font-size:.78rem;font-weight:800;white-space:nowrap
-}
-.status-pendente{color:var(--vermelho);background:var(--vermelho-fundo)}
-.status-andamento{color:var(--amarelo);background:var(--amarelo-fundo)}
-.status-resolvido{color:var(--verde);background:var(--verde-fundo)}
-.issue-card h3{margin-bottom:8px;color:var(--azul);font-size:1.2rem;line-height:1.35}
-.issue-address{margin-bottom:14px;color:var(--suave);font-size:.88rem}
-.issue-description{flex-grow:1;margin-bottom:17px;font-size:.94rem;white-space:pre-wrap}
-.issue-image{width:100%;max-height:260px;margin-bottom:16px;border-radius:9px;object-fit:cover}
-.issue-meta{padding-bottom:15px;color:var(--suave);font-size:.8rem}
-.card-actions{
-  display:flex;align-items:center;flex-wrap:wrap;gap:9px;
-  padding-top:15px;border-top:1px solid var(--borda)
-}
-.support-btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:10px 13px;border:1px solid var(--borda);border-radius:8px;
-  background:white;color:var(--azul);font-size:.86rem;font-weight:750
-}
-.support-btn.supported{border-color:var(--laranja);background:#FFFAF0;color:#9C4221}
-.comment-toggle{
-  padding:9px 10px;border:0;background:transparent;
-  color:var(--azul);font-size:.86rem;font-weight:750
-}
-.comments-area{display:none;margin-top:17px;padding-top:15px;border-top:1px solid var(--borda)}
-.comments-area.open{display:block}
-.comments-list{display:flex;flex-direction:column;gap:10px;margin-bottom:13px}
-.comment{padding:12px;border-radius:8px;background:var(--fundo);font-size:.88rem;overflow-wrap:anywhere}
-.comment strong{display:block;margin-bottom:3px;color:var(--azul)}
-.comment-form{display:flex;flex-direction:column;gap:9px}
-.comment-form textarea{min-height:75px}
-.comment-form .btn{align-self:flex-start;padding:9px 14px;font-size:.86rem}
-.empty-state{
-  grid-column:1/-1;padding:45px 20px;border:1px dashed #CBD5E0;
-  border-radius:var(--raio);background:white;color:var(--suave);text-align:center
-}
-.empty-state strong{display:block;margin-bottom:8px;color:var(--azul);font-size:1.1rem}
-.footer{padding:32px 0;background:var(--azul);color:#E2E8F0;text-align:center}
-.footer strong{color:white}
-.footer p{font-size:.88rem}
-.toast{
-  position:fixed;right:20px;bottom:20px;z-index:2000;
-  max-width:min(380px,calc(100% - 40px));padding:14px 19px;
-  border-radius:10px;background:var(--azul);color:white;
-  box-shadow:var(--sombra);opacity:0;transform:translateY(12px);
-  pointer-events:none;transition:.25s
-}
-.toast.show{opacity:1;transform:translateY(0)}
-:focus-visible{outline:3px solid var(--laranja);outline-offset:3px}
 [hidden]{display:none!important}
-@media(max-width:760px){
-  .navbar{min-height:68px}
-  .logo{font-size:.96rem}
-  .logo-icon{width:38px;height:38px}
-  .menu-toggle{display:inline-flex}
-  .nav-links{
-    display:none;position:absolute;top:100%;left:0;right:0;
-    flex-direction:column;align-items:stretch;gap:0;padding:10px 4%;
-    background:white;border-bottom:1px solid var(--borda)
-  }
-  .nav-links.open{display:flex}
-  .nav-links a{display:block;padding:12px 5px}
-  .navbar{flex-wrap:wrap}
-  .language-select{max-width:125px}
-  .hero{padding:70px 0 75px}
-  .section{padding:55px 0}
-  .form-grid{grid-template-columns:1fr}
-  .form-group.full-width{grid-column:auto}
-  .feed-grid{grid-template-columns:1fr}
-  .feed-toolbar{align-items:stretch}
-  .feed-filters{width:100%}
-  .filter-select{flex:1;min-width:0}
-  .form-footer{align-items:stretch}
-  .form-footer .btn{width:100%}
-  .privacy-note{max-width:none}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font-family:"Twemoji Country Flags","Plus Jakarta Sans",system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default}
+.container{width:min(1180px,100% - 32px);margin-inline:auto}
+/* Itens de grid podem encolher (evita que textos longos alarguem a página no celular) */
+.hero-grid>*,.form-grid>*,.map-wrap>*,.dash>*,.biz>*,.fields>*{min-width:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Cabeçalho ---------- */
+.header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--navy);letter-spacing:-.3px;line-height:1.1}
+.brand-mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--navy),var(--navy-3));color:#fff;font-size:1.25rem;box-shadow:0 6px 16px rgba(15,42,74,.25);flex:none}
+.brand small{display:block;font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:0}
+.nav-links{display:flex;gap:26px;list-style:none;font-size:.93rem;font-weight:600;color:var(--muted)}
+.nav-links a:hover{color:var(--navy)}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.language-select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 10px;font-size:.88rem;font-weight:600;color:var(--navy);cursor:pointer}
+.menu-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;width:42px;height:42px;font-size:1.2rem;color:var(--navy);flex:none}
+
+/* ---------- Botões ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:13px 22px;font-weight:700;font-size:.95rem;transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.7}
+.btn-clay{background:var(--clay);color:#fff;box-shadow:0 8px 20px rgba(224,112,58,.35)}
+.btn-clay:hover{background:var(--clay-dark)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.btn-ghost:hover{background:rgba(255,255,255,.2)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy-2)}
+.btn-sm{padding:9px 16px;font-size:.88rem;border-radius:10px}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;overflow:hidden;color:#fff;background:
+  radial-gradient(900px 500px at 85% -10%,rgba(224,112,58,.35),transparent 60%),
+  radial-gradient(700px 500px at -10% 110%,rgba(33,80,138,.9),transparent 60%),
+  linear-gradient(160deg,var(--navy) 0%,#0B2140 100%)}
+.hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:linear-gradient(180deg,#000 30%,transparent 95%);mask-image:linear-gradient(180deg,#000 30%,transparent 95%)}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:84px 0 96px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:.82rem;font-weight:600}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 4px rgba(74,222,128,.2)}
+.hero h1{font-size:clamp(2.2rem,5vw,3.7rem);line-height:1.05;letter-spacing:-1.5px;font-weight:800;margin:20px 0 18px}
+.hero h1 em{font-style:normal;color:#FFB48A}
+.hero p.lead{font-size:1.12rem;color:#C9D6E6;max-width:540px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:44px;max-width:560px}
+.hero-stat{padding:14px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.hero-stat strong{display:block;font-size:1.55rem;font-weight:800;line-height:1.1}
+.hero-stat span{font-size:.76rem;color:#AFC1D6}
+
+/* Celular ilustrativo */
+.phone-area{position:relative}
+.phone{position:relative;width:min(330px,100%);margin-inline:auto;border-radius:38px;padding:12px;background:#0A1A2E;box-shadow:var(--shadow-lg),inset 0 0 0 2px rgba(255,255,255,.08);transform:rotate(2deg)}
+.phone-screen{border-radius:28px;background:var(--bg);color:var(--ink);overflow:hidden}
+.phone-top{background:var(--navy);color:#fff;padding:16px 18px 18px;font-size:.8rem}
+.phone-top b{display:block;font-size:1rem}
+.phone-body{padding:14px;display:grid;gap:10px}
+.mini-card{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(15,42,74,.07);font-size:.78rem}
+.mini-card h4{font-size:.86rem;margin:6px 0 4px;line-height:1.3}
+.mini-card .where{color:var(--muted)}
+.mini-card .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted)}
+.float-badge{position:absolute;display:flex;align-items:center;gap:8px;background:#fff;color:var(--ink);padding:10px 14px;border-radius:14px;box-shadow:var(--shadow-lg);font-size:.8rem;font-weight:700;transform:rotate(-2deg)}
+.float-badge.one{left:-20px;top:-22px}
+.float-badge.two{right:-30px;bottom:70px}
+.float-badge i{font-style:normal;font-size:1.1rem}
+
+/* ---------- Parceiros ---------- */
+.partners{background:#fff;border-bottom:1px solid var(--line)}
+.partners-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0;flex-wrap:wrap}
+.partners-label{font-size:.78rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.partners-logos{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.partner{display:flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;min-height:72px}
+.partner img{height:52px;width:auto;max-width:170px;object-fit:contain}
+.partner .role{font-size:.72rem;color:var(--muted);font-weight:600;line-height:1.3}
+.partner .role b{display:block;color:var(--ink);font-size:.86rem}
+.logo-fallback{display:grid;place-items:center;height:52px;min-width:52px;padding:0 12px;border-radius:10px;font-weight:800;font-size:.8rem;letter-spacing:.5px;color:#fff;background:var(--navy);text-align:center;line-height:1.1}
+.logo-fallback.city{background:var(--green)}
+
+/* ---------- Seções ---------- */
+.section{padding:96px 0}
+.section.alt{background:#fff}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--clay);margin-bottom:12px}
+.section-head{max-width:680px;margin-bottom:46px}
+.section-head.center{margin-inline:auto;text-align:center}
+.section-head h2{font-size:clamp(1.8rem,3.6vw,2.6rem);line-height:1.12;letter-spacing:-1px;color:var(--navy);font-weight:800}
+.section-head p{color:var(--muted);font-size:1.05rem;margin-top:14px}
+
+/* Como funciona */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:step}
+.step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;transition:transform .2s,box-shadow .2s}
+.step:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.step .ico{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--clay-soft);margin-bottom:18px}
+.step:nth-child(2) .ico{background:#E4EDF8}
+.step:nth-child(3) .ico{background:var(--green-soft)}
+.step:nth-child(4) .ico{background:var(--amber-soft)}
+.step:before{counter-increment:step;content:"0" counter(step);position:absolute;top:22px;right:22px;font-weight:800;color:#D9D3C7;font-size:1.3rem}
+.step h3{font-size:1.08rem;color:var(--navy);margin-bottom:6px}
+.step p{font-size:.92rem;color:var(--muted)}
+
+/* Mapa da cidade */
+.map-wrap{display:grid;grid-template-columns:1fr 340px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+#cityMap{height:520px;z-index:1;background:#E9E5DC}
+.map-side{border-left:1px solid var(--line);display:flex;flex-direction:column;max-height:520px}
+.map-side-head{padding:18px 20px;border-bottom:1px solid var(--line)}
+.map-side-head h3{font-size:1rem;color:var(--navy)}
+.map-side-head p{font-size:.82rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);font-weight:600}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.map-list{overflow:auto;padding:8px}
+.map-item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.map-item:hover,.map-item.active{background:var(--bg)}
+.map-item i{width:12px;height:12px;border-radius:50%;margin-top:6px;flex:none}
+.map-item b{display:block;font-size:.88rem;line-height:1.3}
+.map-item small{color:var(--muted);font-size:.76rem}
+.map-note{padding:18px 14px;font-size:.86rem;color:var(--muted)}
+
+/* Relatos */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:.84rem;font-weight:600;color:var(--muted);transition:.15s}
+.chip:hover{border-color:var(--navy-3);color:var(--navy)}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.search{position:relative}
+.search input{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px 11px 40px;width:280px;max-width:100%}
+.search:before{content:"🔎";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.9rem;opacity:.6}
+.feed-count{font-size:.86rem;color:var(--muted);margin:-8px 0 18px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card-media{height:170px;display:grid;place-items:center;font-size:3rem;position:relative;overflow:hidden}
+.card-media img{width:100%;height:100%;object-fit:cover}
+.card-media .rank{position:absolute;top:12px;left:12px;background:rgba(15,42,74,.85);color:#fff;font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px}
+.card-body{padding:18px 18px 16px;display:flex;flex-direction:column;flex:1}
+.card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.tag{font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--bg);color:var(--muted)}
+.status{font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;display:inline-block;white-space:nowrap}
+.st-pendente{background:var(--amber-soft);color:#9A6A12}
+.st-andamento{background:#E4EDF8;color:var(--navy-3)}
+.st-resolvido{background:var(--green-soft);color:#13704B}
+.card h3{font-size:1.04rem;line-height:1.3;color:var(--ink);margin-bottom:6px;overflow-wrap:anywhere}
+.card .addr{font-size:.82rem;color:var(--muted);margin-bottom:10px;overflow-wrap:anywhere}
+.card .desc{font-size:.9rem;color:#3E4C5B;overflow-wrap:anywhere;white-space:pre-line}
+.progress{height:6px;border-radius:99px;background:var(--bg);margin:16px 0 6px;overflow:hidden}
+.progress span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--clay),#F2A170)}
+.progress-label{font-size:.74rem;color:var(--muted)}
+.card-actions{display:flex;gap:8px;margin-top:14px}
+.support{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:700;font-size:.88rem;color:var(--navy);transition:.15s}
+.support:hover:not(:disabled){border-color:var(--clay);color:var(--clay)}
+.support.on{background:var(--clay);border-color:var(--clay);color:#fff;opacity:1}
+.icon-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:.88rem;transition:.15s}
+.icon-btn:hover:not(:disabled){border-color:var(--navy-3)}
+.icon-btn:disabled{opacity:.4}
+.comments{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+.comments-list{display:grid;gap:8px;font-size:.86rem;margin-bottom:10px;max-height:260px;overflow:auto}
+.comment{background:var(--bg);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere;white-space:pre-line}
+.comment strong{display:block;font-size:.74rem;color:var(--muted);font-weight:700;white-space:normal}
+.comments-empty{color:var(--muted);font-size:.84rem}
+.comment-form{display:grid;gap:8px}
+.comment-form textarea{min-height:70px}
+.empty{grid-column:1/-1;text-align:center;padding:50px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:var(--radius)}
+.empty b{color:var(--ink)}
+
+/* Formulário */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.form-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.form-card h3{font-size:1.25rem;color:var(--navy);margin-bottom:4px}
+.form-card > p{color:var(--muted);font-size:.92rem;margin-bottom:22px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label,.field .label{font-size:.84rem;font-weight:700;color:var(--ink)}
+.req{color:var(--clay)}
+.input{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;background:#FCFBF9;transition:border .15s,box-shadow .15s;width:100%}
+.input:focus{outline:none;border-color:var(--navy-3);box-shadow:0 0 0 4px rgba(33,80,138,.12);background:#fff}
+textarea.input{min-height:110px;resize:vertical}
+.cep-row{display:flex;gap:8px}
+.cep-row .input{flex:1;min-width:0}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat-opt{position:relative}
+.cat-opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.cat-opt span{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border:1.5px solid var(--line);border-radius:12px;font-size:.74rem;font-weight:700;text-align:center;color:var(--muted);transition:.15s;line-height:1.2;height:100%}
+.cat-opt span i{font-style:normal;font-size:1.35rem}
+.cat-opt input:checked + span{border-color:var(--clay);background:var(--clay-soft);color:var(--clay-dark)}
+.cat-opt input:focus-visible + span{box-shadow:0 0 0 4px rgba(224,112,58,.2)}
+.upload{border:1.5px dashed #CFC7B8;border-radius:12px;padding:18px;text-align:center;font-size:.86rem;color:var(--muted);position:relative;background:#FCFBF9}
+.upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.upload img{max-height:160px;margin:10px auto 0;border-radius:10px}
+.privacy{font-size:.78rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:16px 0}
+.side-panel{display:grid;gap:18px;position:sticky;top:100px}
+.form-map-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.form-map-card header{padding:16px 18px;border-bottom:1px solid var(--line)}
+.form-map-card header b{color:var(--navy)}
+.form-map-card header p{font-size:.8rem;color:var(--muted)}
+#formMap{height:300px;z-index:1;background:#E9E5DC}
+.tip{background:var(--navy);color:#fff;border-radius:var(--radius);padding:22px}
+.tip b{display:block;margin-bottom:6px}
+.tip p{font-size:.88rem;color:#C9D6E6}
+
+/* Painel */
+.dash{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:20px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.panel h3{font-size:1rem;color:var(--navy);margin-bottom:4px}
+.panel > p{font-size:.82rem;color:var(--muted);margin-bottom:18px}
+.bars{display:grid;gap:12px}
+.bar-row{display:grid;grid-template-columns:150px 1fr 32px;align-items:center;gap:10px;font-size:.84rem}
+.bar-track{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar-track span{display:block;height:100%;border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar-row b{text-align:right}
+.donut{width:170px;height:170px;border-radius:50%;margin:6px auto 18px;display:grid;place-items:center;position:relative;background:var(--bg)}
+.donut:after{content:"";position:absolute;inset:24px;border-radius:50%;background:#fff}
+.donut div{position:relative;z-index:1;text-align:center}
+.donut strong{font-size:1.8rem;color:var(--navy);display:block;line-height:1}
+.donut small{font-size:.74rem;color:var(--muted)}
+.donut-legend{display:grid;gap:8px;font-size:.84rem}
+.donut-legend span{display:flex;align-items:center;gap:8px}
+.donut-legend i{width:10px;height:10px;border-radius:3px}
+.donut-legend b{margin-left:auto}
+.top-list{display:grid;gap:10px;counter-reset:top}
+.top-list li{list-style:none;display:flex;gap:12px;align-items:center;font-size:.86rem}
+.top-list li:before{counter-increment:top;content:counter(top);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--clay-soft);color:var(--clay-dark);font-weight:800;flex:none}
+.top-list li b{display:block;line-height:1.3;overflow-wrap:anywhere}
+.top-list li small{color:var(--muted)}
+.panel-empty{font-size:.86rem;color:var(--muted)}
+.top-list.is-empty li:before{display:none}
+
+/* Comércio */
+.biz{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;border-radius:28px;padding:56px;position:relative;overflow:hidden}
+.biz:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(224,112,58,.45),transparent 70%);right:-120px;top:-160px}
+.biz-text{position:relative;z-index:1}
+.biz h2{font-size:clamp(1.7rem,3.2vw,2.3rem);line-height:1.15;letter-spacing:-.8px;margin-bottom:14px}
+.biz p{color:#C9D6E6}
+.biz ul{list-style:none;display:grid;gap:12px;margin-top:22px}
+.biz li{display:flex;gap:12px;align-items:flex-start;font-size:.95rem}
+.biz li i{font-style:normal;width:28px;height:28px;flex:none;border-radius:8px;background:rgba(255,255,255,.12);display:grid;place-items:center}
+.seal{position:relative;z-index:1;width:260px;height:260px;margin-inline:auto;border-radius:50%;background:#fff;color:var(--navy);display:grid;place-items:center;text-align:center;box-shadow:0 0 0 12px rgba(255,255,255,.1),0 0 0 26px rgba(255,255,255,.05),var(--shadow-lg)}
+.seal div{padding:28px}
+.seal i{font-style:normal;font-size:2.6rem;display:block}
+.seal b{display:block;font-size:1.3rem;line-height:1.15;margin:6px 0}
+.seal small{font-size:.74rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* Rodapé */
+.footer{background:#0B2140;color:#AFC1D6;padding:64px 0 28px;margin-top:96px}
+.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+.footer .brand{color:#fff}
+.footer .brand small{color:#7F95AE}
+.footer p{font-size:.9rem;margin-top:14px;max-width:360px}
+.footer h4{color:#fff;font-size:.9rem;margin-bottom:14px}
+.footer ul{list-style:none;display:grid;gap:8px;font-size:.9rem}
+.footer a:hover{color:#fff}
+.footer-logos{display:flex;gap:12px;flex-wrap:wrap}
+.footer-logos .logo-box{background:#fff;border-radius:12px;padding:8px 12px;display:grid;place-items:center;min-height:60px}
+.footer-logos img{height:44px;width:auto;max-width:150px;object-fit:contain}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:44px;padding-top:22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.82rem}
+.footer-bottom b{color:#fff}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,160%);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:.9rem;font-weight:600;box-shadow:var(--shadow-lg);z-index:3000;transition:transform .3s cubic-bezier(.2,.8,.2,1);max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translate(-50%,0)}
+
+/* Animação de entrada */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* ---------- Responsivo ---------- */
+@media (max-width:1100px){
+  .nav-links{gap:18px}
 }
-@media(max-width:390px){
-  .container{width:94%}
-  .hero h1{font-size:2rem}
-  .hero-stats{gap:20px}
-  .stat{min-width:90px}
+@media (max-width:1020px){
+  .hero-grid{grid-template-columns:1fr;gap:50px;padding:64px 0 80px}
+  .float-badge.one{left:0}.float-badge.two{right:0}
+  .steps{grid-template-columns:1fr 1fr}
+  .map-wrap{grid-template-columns:1fr}
+  .map-side{border-left:0;border-top:1px solid var(--line);max-height:320px}
+  #cityMap{height:400px}
+  .cards{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .side-panel{position:static}
+  .dash{grid-template-columns:1fr 1fr}
+  .dash .panel:first-child{grid-column:1/-1}
+  .biz{grid-template-columns:1fr;padding:40px}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .footer-grid > div:first-child{grid-column:1/-1}
+}
+@media (max-width:900px){
+  .nav-links{display:none;position:absolute;top:72px;left:0;right:0;flex-direction:column;gap:0;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px;box-shadow:var(--shadow)}
+  .nav-links.open{display:flex}
+  .nav-links a{display:block;padding:12px 4px}
+  .menu-btn{display:block}
+}
+@media (max-width:760px){
+  .nav-actions .btn{display:none}
+  .brand{font-size:.95rem}
+  .section{padding:70px 0}
+  .btn{white-space:normal}
+  .hero-ctas .btn{flex:1 1 100%}
+  .hero h1 br{display:none}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .phone{transform:none}
+  .steps,.cards,.dash{grid-template-columns:1fr}
+  .dash .panel:first-child{grid-column:auto}
+  .fields{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
   .cep-row{flex-direction:column}
-  .cep-row .btn{width:100%}
-  .feed-filters{flex-direction:column}
-  .filter-select{width:100%}
+  .form-card{padding:22px}
+  .search,.search input{width:100%}
+  .bar-row{grid-template-columns:110px 1fr 28px}
+  .biz{padding:30px 22px;border-radius:22px}
+  .seal{width:220px;height:220px}
+  .footer-grid{grid-template-columns:1fr}
+  .partners-inner{justify-content:center;text-align:center}
+}
+@media (max-width:400px){
+  .brand small{display:none}
+  .language-select{padding:8px 6px;font-size:.82rem}
 }
 </style>
 </head>
-
 <body>
+
 <header class="header">
-  <div class="container navbar">
-    <a href="#inicio" class="logo">
-      <span class="logo-icon">🏘️</span>
-      <span>Minha Rua Tem Voz</span>
+  <div class="container nav">
+    <a href="#inicio" class="brand">
+      <span class="brand-mark">🏘️</span>
+      <span>Minha Rua Tem Voz<small>Campo Largo · PR</small></span>
     </a>
-
-    <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" data-i18n-aria-label="openMenu" aria-expanded="false">☰</button>
-
     <ul class="nav-links" id="navLinks">
-      <li><a href="#inicio" data-i18n="home">Início</a></li>
-      <li><a href="#registrar" data-i18n="report">Registrar problema</a></li>
-      <li><a href="#comunidade" data-i18n="community">Comunidade</a></li>
+      <li><a href="#como-funciona" data-i18n="navHow">Como funciona</a></li>
+      <li><a href="#mapa" data-i18n="navMap">Mapa</a></li>
+      <li><a href="#relatos" data-i18n="navReports">Relatos</a></li>
+      <li><a href="#painel" data-i18n="navPanel">Painel</a></li>
+      <li><a href="#comercio" data-i18n="navBusiness">Comércio</a></li>
     </ul>
-
-    <label class="sr-only" for="language" data-i18n="language">Idioma</label>
-    <select class="language-select" id="language" aria-label="Idioma" data-i18n-aria-label="language">
-      <option value="pt">🇧🇷 Português</option>
-      <option value="en">🇺🇸 English</option>
-      <option value="es">🇪🇸 Español</option>
-      <option value="fr">🇫🇷 Français</option>
-      <option value="de">🇩🇪 Deutsch</option>
-      <option value="it">🇮🇹 Italiano</option>
-      <option value="zh">🇨🇳 简体中文</option>
-      <option value="ja">🇯🇵 日本語</option>
-      <option value="hi">🇮🇳 हिन्दी</option>
-      <option value="ar">🇸🇦 العربية</option>
-    </select>
+    <div class="nav-actions">
+      <a href="#registrar" class="btn btn-clay btn-sm" data-i18n="navCta">📢 Registrar problema</a>
+      <label class="sr-only" for="language" data-i18n="language">Idioma</label>
+      <select class="language-select" id="language" aria-label="Idioma" data-i18n-aria-label="language">
+        <option value="pt">🇧🇷 PT</option>
+        <option value="en">🇺🇸 EN</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" data-i18n-aria-label="openMenu" aria-expanded="false">☰</button>
+    </div>
   </div>
 </header>
 
 <main>
+<!-- ============ HERO ============ -->
 <section class="hero" id="inicio">
-  <div class="container hero-content">
-    <span class="hero-tag" data-i18n="heroTag">Sua comunidade, sua voz</span>
-    <h1 data-i18n="heroTitle">Uma cidade melhor começa com a sua voz.</h1>
-    <p data-i18n="heroText">Registre problemas do seu bairro, apoie outras pessoas e ajude a chamar atenção para melhorias na sua comunidade.</p>
-    <a href="#registrar" class="btn btn-primary" data-i18n="heroButton">📢 Registrar um problema</a>
-
-    <div class="hero-stats">
-      <div class="stat"><strong id="totalReports">0</strong><span data-i18n="statReports">Relatos publicados</span></div>
-      <div class="stat"><strong id="totalSupport">0</strong><span data-i18n="statSupport">Apoios da comunidade</span></div>
-    </div>
-  </div>
-</section>
-
-<section class="section report-section" id="registrar">
-  <div class="container">
-    <div class="section-heading">
-      <h2 data-i18n="formHeading">Conte o que está acontecendo.</h2>
-      <p data-i18n="formSubheading">Preencha os dados abaixo. É simples e leva poucos minutos.</p>
-    </div>
-
-    <div class="form-card">
-      <h3 class="form-title" data-i18n="formTitle">Registrar um problema</h3>
-      <p class="form-description" data-i18n="formDescription">Descreva a situação para que outras pessoas da comunidade possam conhecer e apoiar.</p>
-
-      <form id="reportForm">
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label for="title"><span data-i18n="titleLabel">Título do problema</span> <span class="required">*</span></label>
-            <input class="form-control" id="title" maxlength="100" required placeholder="Ex.: Buraco grande na rua principal" data-i18n-placeholder="titlePlaceholder">
-          </div>
-
-          <div class="form-group">
-            <label for="category"><span data-i18n="categoryLabel">Categoria</span> <span class="required">*</span></label>
-            <select class="form-control" id="category" required>
-              <option value="" data-i18n="chooseCategory">Selecione uma categoria</option>
-              <option value="Pavimentação" data-i18n="catRoad">Buracos e pavimentação</option>
-              <option value="Iluminação" data-i18n="catLight">Iluminação pública</option>
-              <option value="Lixo e limpeza" data-i18n="catTrash">Lixo e limpeza</option>
-              <option value="Saneamento" data-i18n="catSewage">Saneamento e água</option>
-              <option value="Transporte" data-i18n="catTransport">Transporte público</option>
-              <option value="Segurança" data-i18n="catSafety">Segurança e sinalização</option>
-              <option value="Acessibilidade" data-i18n="catAccess">Acessibilidade</option>
-              <option value="Outro" data-i18n="catOther">Outro</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="cep" data-i18n="cepLabel">CEP (opcional)</label>
-            <div class="cep-row">
-              <input class="form-control" id="cep" inputmode="numeric" maxlength="9" placeholder="00000-000">
-              <button class="btn btn-blue" type="button" id="searchCep" data-i18n="searchCep">Buscar</button>
-            </div>
-            <span class="field-hint" data-i18n="cepHint">Se não souber o CEP, pode preencher o endereço manualmente.</span>
-          </div>
-
-          <div class="form-group">
-            <label for="street"><span data-i18n="streetLabel">Rua ou avenida</span> <span class="required">*</span></label>
-            <input class="form-control" id="street" maxlength="120" required placeholder="Nome da rua" data-i18n-placeholder="streetPlaceholder">
-          </div>
-
-          <div class="form-group">
-            <label for="neighborhood"><span data-i18n="neighborhoodLabel">Bairro</span> <span class="required">*</span></label>
-            <input class="form-control" id="neighborhood" maxlength="100" required placeholder="Nome do bairro" data-i18n-placeholder="neighborhoodPlaceholder">
-          </div>
-
-          <div class="form-group">
-            <label for="city"><span data-i18n="cityLabel">Cidade</span> <span class="required">*</span></label>
-            <input class="form-control" id="city" maxlength="100" required placeholder="Sua cidade" data-i18n-placeholder="cityPlaceholder">
-          </div>
-
-          <div class="form-group">
-            <label for="state"><span data-i18n="stateLabel">Estado</span> <span class="required">*</span></label>
-            <input class="form-control" id="state" maxlength="60" required placeholder="Ex.: PR" data-i18n-placeholder="statePlaceholder">
-          </div>
-
-          <div class="form-group full-width">
-            <div class="address-note" data-i18n="addressNote">📍 Não precisa mexer no mapa para publicar. O endereço escrito já é suficiente. Se quiser, você pode marcar o local no mapa abaixo.</div>
-            <button type="button" class="map-toggle" id="mapToggle" aria-expanded="false" data-i18n="mapButton">🗺️ Mostrar mapa (opcional)</button>
-            <div id="map"></div>
-            <p class="map-hint" id="mapHint" hidden data-i18n="mapHint">Toque no mapa para marcar o local aproximado do problema. Não é obrigatório.</p>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="description"><span data-i18n="descriptionLabel">Descrição</span> <span class="required">*</span></label>
-            <textarea class="form-control" id="description" maxlength="2000" required placeholder="Explique o que aconteceu, onde está o problema e há quanto tempo..." data-i18n-placeholder="descriptionPlaceholder"></textarea>
-          </div>
-
-          <div class="form-group full-width">
-            <label data-i18n="photoLabel">Foto (opcional)</label>
-            <div class="upload-box">
-              <div style="font-size:1.8rem">📷</div>
-              <strong data-i18n="photoTitle">Adicionar uma foto</strong>
-              <span data-i18n="photoHint">JPG, PNG ou WEBP. Até 50 MB.</span>
-              <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
-            </div>
-            <img id="imagePreview" class="image-preview" alt="Prévia da foto selecionada" data-i18n-alt="previewAlt">
-          </div>
-        </div>
-
-        <div class="form-footer">
-          <p class="privacy-note" data-i18n="privacyNote">Não coloque senhas, documentos, telefones ou dados pessoais na descrição. Evite fotografar rostos e placas de veículos.</p>
-          <button class="btn btn-primary" type="submit" id="submitButton" data-i18n="submitButton">📢 Publicar relato</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<section class="section feed-section" id="comunidade">
-  <div class="container">
-    <div class="section-heading">
-      <h2 data-i18n="feedHeading">O que acontece na sua comunidade?</h2>
-      <p data-i18n="feedSubheading">Veja os problemas registrados e apoie aqueles que também precisam de atenção.</p>
-    </div>
-
-    <div class="feed-toolbar">
-      <span class="feed-count" id="feedCount">Carregando relatos...</span>
-      <div class="feed-filters">
-        <input class="filter-select" id="searchInput" placeholder="Buscar por rua ou problema..." data-i18n-placeholder="searchPlaceholder" aria-label="Buscar relatos" data-i18n-aria-label="searchAria">
-        <select class="filter-select" id="categoryFilter" aria-label="Filtrar por categoria" data-i18n-aria-label="filterAria">
-          <option value="" data-i18n="allCategories">Todas as categorias</option>
-          <option value="Pavimentação" data-i18n="catRoad">Buracos e pavimentação</option>
-          <option value="Iluminação" data-i18n="catLight">Iluminação pública</option>
-          <option value="Lixo e limpeza" data-i18n="catTrash">Lixo e limpeza</option>
-          <option value="Saneamento" data-i18n="catSewage">Saneamento e água</option>
-          <option value="Transporte" data-i18n="catTransport">Transporte público</option>
-          <option value="Segurança" data-i18n="catSafety">Segurança e sinalização</option>
-          <option value="Acessibilidade" data-i18n="catAccess">Acessibilidade</option>
-          <option value="Outro" data-i18n="catOther">Outro</option>
-        </select>
+  <div class="container hero-grid">
+    <div>
+      <span class="pill"><span class="dot"></span> <span data-i18n="heroPill">Plataforma comunitária de Campo Largo</span></span>
+      <h1><span data-i18n="heroTitle1">Sua rua tem problemas.</span><br> <span data-i18n="heroTitle2">Agora ela também tem</span> <em data-i18n="heroTitle3">voz</em>.</h1>
+      <p class="lead" data-i18n="heroLead">Registre buracos, lâmpadas apagadas, lixo e falta de acessibilidade em menos de dois minutos. A comunidade apoia e a cidade enxerga o que é prioridade.</p>
+      <div class="hero-ctas">
+        <a href="#registrar" class="btn btn-clay" data-i18n="heroCta1">📢 Registrar um problema</a>
+        <a href="#mapa" class="btn btn-ghost" data-i18n="heroCta2">🗺️ Ver mapa da cidade</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong id="stReports">0</strong><span data-i18n="statReports">relatos</span></div>
+        <div class="hero-stat"><strong id="stSupport">0</strong><span data-i18n="statSupport">apoios</span></div>
+        <div class="hero-stat"><strong id="stResolved">0</strong><span data-i18n="statResolved">resolvidos</span></div>
+        <div class="hero-stat"><strong id="stHoods">0</strong><span data-i18n="statHoods">bairros</span></div>
       </div>
     </div>
 
-    <div class="feed-grid" id="feedGrid">
-      <div class="empty-state"><strong data-i18n="loading">Carregando...</strong></div>
+    <!-- Ilustração (exemplos fixos, não são relatos reais) -->
+    <div class="phone-area" aria-hidden="true">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-top"><span data-i18n="phoneHello">Bom dia, Campo Largo 👋</span><b data-i18n="phoneQuestion">O que acontece na sua rua?</b></div>
+          <div class="phone-body">
+            <div class="mini-card">
+              <span class="status st-andamento" data-i18n="progress">Em andamento</span>
+              <h4 data-i18n="mock1">Buraco grande perto da escola</h4>
+              <span class="where">📍 Centro</span>
+              <div class="row"><span>🧡 48 <span data-i18n="supportsWord">apoios</span></span><span data-days="3"></span></div>
+            </div>
+            <div class="mini-card">
+              <span class="status st-pendente" data-i18n="pending">Pendente</span>
+              <h4 data-i18n="mock2">Poste apagado há duas semanas</h4>
+              <span class="where">📍 Rondinha</span>
+              <div class="row"><span>🧡 31 <span data-i18n="supportsWord">apoios</span></span><span data-days="5"></span></div>
+            </div>
+            <div class="mini-card">
+              <span class="status st-resolvido"><span data-i18n="resolved">Resolvido</span> ✓</span>
+              <h4 data-i18n="mock3">Lixo acumulado na praça</h4>
+              <span class="where">📍 Ferraria</span>
+              <div class="row"><span>🧡 22 <span data-i18n="supportsWord">apoios</span></span><span data-days="9"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="float-badge one"><i>✅</i> <span data-i18n="badgeResolved">Problema resolvido!</span></div>
+      <div class="float-badge two"><i>🧡</i> <span data-i18n="badgeSupport">+12 vizinhos apoiaram</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARCEIROS ============ -->
+<section class="partners" aria-label="ACICLA · Prefeitura de Campo Largo">
+  <div class="container partners-inner">
+    <span class="partners-label" data-i18n="partnersLabel">Iniciativa apresentada ao</span>
+    <div class="partners-logos">
+      <div class="partner">
+        <img src="assets/logo-acicla.png" alt="Logo da ACICLA" data-fallback="ACICLA">
+        <div class="role"><span data-i18n="partnerSchool">Projeto escolar</span><b>ACICLA · Campo Largo</b></div>
+      </div>
+      <div class="partner">
+        <img src="assets/logo-prefeitura.jpg" alt="Brasão de Campo Largo" data-fallback="Prefeitura" data-fallback-class="city">
+        <div class="role"><span data-i18n="partnerProposed">Parceria proposta</span><b>Prefeitura de Campo Largo</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMO FUNCIONA ============ -->
+<section class="section" id="como-funciona">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow" data-i18n="howEyebrow">Como funciona</span>
+      <h2 data-i18n="howTitle">Do problema na calçada à solução, em quatro passos</h2>
+      <p data-i18n="howText">Sem cadastro, sem aplicativo para instalar e sem burocracia. Funciona em qualquer celular.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="ico">📸</div><h3 data-i18n="step1Title">Registre</h3><p data-i18n="step1Text">Tire uma foto, escolha a categoria e descreva o problema em poucas palavras.</p></div>
+      <div class="step reveal"><div class="ico">📍</div><h3 data-i18n="step2Title">Localize</h3><p data-i18n="step2Text">Digite o CEP: o endereço se preenche sozinho e o ponto aparece no mapa.</p></div>
+      <div class="step reveal"><div class="ico">🧡</div><h3 data-i18n="step3Title">Mobilize</h3><p data-i18n="step3Text">Vizinhos apoiam e comentam. Quanto mais apoio, maior a prioridade.</p></div>
+      <div class="step reveal"><div class="ico">✅</div><h3 data-i18n="step4Title">Acompanhe</h3><p data-i18n="step4Text">Veja quando o problema passa para "em andamento" e, enfim, "resolvido".</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAPA ============ -->
+<section class="section alt" id="mapa">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="mapEyebrow">Mapa da cidade</span>
+      <h2 data-i18n="mapTitle">Todos os problemas de Campo Largo em um só lugar</h2>
+      <p data-i18n="mapText">Cada ponto é um relato da comunidade. As cores mostram a categoria e ajudam a enxergar onde estão os problemas.</p>
+    </div>
+    <div class="map-wrap reveal">
+      <div id="cityMap" aria-label="Mapa" data-i18n-aria-label="mapEyebrow"></div>
+      <aside class="map-side">
+        <div class="map-side-head">
+          <h3 data-i18n="mapSideTitle">Relatos no mapa</h3>
+          <p data-i18n="mapSideHint">Clique em um item para ver no mapa.</p>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="map-list" id="mapList"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RELATOS ============ -->
+<section class="section" id="relatos">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="repEyebrow">Relatos da comunidade</span>
+      <h2 data-i18n="repTitle">O que os moradores estão pedindo</h2>
+      <p data-i18n="repText">Os relatos mais apoiados aparecem primeiro. Apoie os que também afetam você.</p>
+    </div>
+    <div class="toolbar">
+      <div class="chips" id="chips"></div>
+      <label class="search"><span class="sr-only" data-i18n="searchAria">Buscar relatos</span><input id="search" placeholder="Buscar por rua, bairro ou problema" data-i18n-placeholder="searchPlaceholder"></label>
+    </div>
+    <p class="feed-count" id="feedCount" aria-live="polite"></p>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+
+<!-- ============ REGISTRAR ============ -->
+<section class="section alt" id="registrar">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="formEyebrow">Registrar problema</span>
+      <h2 data-i18n="formHeading">Conte o que está acontecendo na sua rua</h2>
+      <p data-i18n="formSubheading">Leva menos de dois minutos. Seu relato é anônimo.</p>
+    </div>
+    <div class="form-grid">
+      <form class="form-card reveal" id="reportForm" novalidate>
+        <h3 data-i18n="formTitle">Novo relato</h3>
+        <p><span class="req">*</span> <span data-i18n="requiredNote">Campo obrigatório</span></p>
+        <div class="fields">
+          <div class="field full" role="radiogroup" aria-labelledby="catLabel">
+            <span class="label" id="catLabel"><span data-i18n="categoryLabel">Categoria</span> <span class="req">*</span></span>
+            <div class="cat-grid" id="catGrid"></div>
+          </div>
+          <div class="field full">
+            <label for="fTitle"><span data-i18n="titleLabel">Título</span> <span class="req">*</span></label>
+            <input class="input" id="fTitle" maxlength="100" placeholder="Ex.: Buraco grande em frente à escola" data-i18n-placeholder="titlePlaceholder">
+          </div>
+          <div class="field full">
+            <label for="fCep" data-i18n="cepLabel">CEP</label>
+            <div class="cep-row">
+              <input class="input" id="fCep" inputmode="numeric" maxlength="9" placeholder="00000-000" autocomplete="postal-code">
+              <button type="button" class="btn btn-navy" id="cepBtn" data-i18n="cepButton">Buscar CEP</button>
+            </div>
+          </div>
+          <div class="field full">
+            <label for="fStreet"><span data-i18n="streetLabel">Rua</span> <span class="req">*</span></label>
+            <input class="input" id="fStreet" maxlength="120" placeholder="Nome da rua" data-i18n-placeholder="streetPlaceholder">
+          </div>
+          <div class="field full">
+            <label for="fHood"><span data-i18n="hoodLabel">Bairro</span> <span class="req">*</span></label>
+            <input class="input" id="fHood" maxlength="100" placeholder="Nome do bairro" data-i18n-placeholder="hoodPlaceholder">
+          </div>
+          <div class="field">
+            <label for="fCity"><span data-i18n="cityLabel">Cidade</span> <span class="req">*</span></label>
+            <input class="input" id="fCity" maxlength="100" value="Campo Largo">
+          </div>
+          <div class="field">
+            <label for="fState"><span data-i18n="stateLabel">Estado (UF)</span> <span class="req">*</span></label>
+            <input class="input" id="fState" maxlength="60" value="PR">
+          </div>
+          <div class="field full">
+            <label for="fDesc"><span data-i18n="descLabel">Descrição</span> <span class="req">*</span></label>
+            <textarea class="input" id="fDesc" maxlength="2000" placeholder="O que aconteceu, onde fica exatamente e há quanto tempo?" data-i18n-placeholder="descPlaceholder"></textarea>
+          </div>
+          <div class="field full">
+            <span class="label" data-i18n="photoLabel">Foto (opcional)</span>
+            <div class="upload">
+              <input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" aria-label="Foto" data-i18n-aria-label="photoLabel">
+              📷 <b data-i18n="photoTitle">Toque para adicionar uma foto</b><br><small data-i18n="photoHint">JPG, PNG ou WEBP · até 50 MB</small>
+              <img id="fPreview" alt="Prévia da foto" data-i18n-alt="previewAlt" hidden>
+            </div>
+          </div>
+        </div>
+        <p class="privacy" data-i18n="privacyNote">🔒 Não coloque nomes, telefones ou documentos. Evite fotografar rostos e placas de veículos.</p>
+        <button class="btn btn-clay" type="submit" id="submitBtn" style="width:100%" data-i18n="submitButton">📢 Publicar relato</button>
+      </form>
+
+      <div class="side-panel">
+        <div class="form-map-card reveal">
+          <header><b data-i18n="mapCardTitle">📍 Local do problema</b><p data-i18n="mapCardText">O ponto aparece sozinho ao buscar o CEP. Toque no mapa ou arraste o pino para ajustar. É opcional.</p></header>
+          <div id="formMap"></div>
+        </div>
+        <div class="tip reveal">
+          <b data-i18n="tipTitle">💡 Dica para um bom relato</b>
+          <p data-i18n="tipText">Um título curto e uma foto nítida fazem o relato receber mais apoios e ser resolvido mais rápido.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAINEL ============ -->
+<section class="section" id="painel">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" data-i18n="panelEyebrow">Painel de impacto</span>
+      <h2 data-i18n="panelTitle">Dados para quem decide</h2>
+      <p data-i18n="panelText">Uma visão organizada das demandas da cidade, pensada para a prefeitura, a ACICLA e as associações de bairro.</p>
+    </div>
+    <div class="dash">
+      <div class="panel reveal">
+        <h3 data-i18n="barsTitle">Relatos por categoria</h3>
+        <p data-i18n="barsText">Quais problemas mais aparecem na cidade.</p>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel reveal">
+        <h3 data-i18n="donutTitle">Situação dos relatos</h3>
+        <p data-i18n="donutText">Quanto já foi resolvido.</p>
+        <div class="donut" id="donut"><div><strong id="donutPct">0%</strong><small data-i18n="statResolved">resolvidos</small></div></div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+      <div class="panel reveal">
+        <h3 data-i18n="topTitle">Prioridades da comunidade</h3>
+        <p data-i18n="topText">Os relatos com mais apoios.</p>
+        <ol class="top-list" id="topList"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMÉRCIO ============ -->
+<section class="section" id="comercio" style="padding-top:0">
+  <div class="container">
+    <div class="biz reveal">
+      <div class="biz-text">
+        <span class="eyebrow" style="color:#FFB48A" data-i18n="bizEyebrow">Para o comércio local</span>
+        <h2 data-i18n="bizTitle">Rua bem cuidada é rua com mais clientes</h2>
+        <p data-i18n="bizText">Calçadas seguras, iluminação e limpeza trazem movimento para o comércio. Empresas que apoiam o projeto mostram compromisso com o bairro onde estão.</p>
+        <ul>
+          <li><i>🏅</i><span><b data-i18n="biz1Bold">Selo "Empresa Amiga do Bairro"</b> <span data-i18n="biz1Text">para exibir na vitrine e nas redes sociais.</span></span></li>
+          <li><i>📊</i><span><b data-i18n="biz2Bold">Relatórios por bairro</b> <span data-i18n="biz2Text">com as principais demandas da região.</span></span></li>
+          <li><i>🤝</i><span><b data-i18n="biz3Bold">Ações em conjunto</b> <span data-i18n="biz3Text">com a ACICLA e as associações de moradores.</span></span></li>
+        </ul>
+      </div>
+      <div class="seal"><div><i>🏘️</i><small data-i18n="sealSmall">Selo</small><b data-i18n="sealName">Empresa Amiga do Bairro</b><small>Campo Largo</small></div></div>
     </div>
   </div>
 </section>
 </main>
 
+<!-- ============ RODAPÉ ============ -->
 <footer class="footer">
   <div class="container">
-    <p><strong>Minha Rua Tem Voz</strong></p>
-    <p data-i18n="footerText">Uma comunidade mais participativa começa com informação e colaboração.</p>
+    <div class="footer-grid">
+      <div>
+        <a href="#inicio" class="brand"><span class="brand-mark">🏘️</span><span>Minha Rua Tem Voz<small>Campo Largo · PR</small></span></a>
+        <p data-i18n="footerText">Uma plataforma comunitária para registrar problemas urbanos, mobilizar vizinhos e ajudar a cidade a definir prioridades.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footerNav">Navegação</h4>
+        <ul>
+          <li><a href="#como-funciona" data-i18n="navHow">Como funciona</a></li>
+          <li><a href="#mapa" data-i18n="mapEyebrow">Mapa da cidade</a></li>
+          <li><a href="#relatos" data-i18n="navReports">Relatos</a></li>
+          <li><a href="#registrar" data-i18n="formEyebrow">Registrar problema</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="partnersLabel">Iniciativa apresentada ao</h4>
+        <div class="footer-logos">
+          <div class="logo-box"><img src="assets/logo-acicla.png" alt="Logo da ACICLA" data-fallback="ACICLA"></div>
+          <div class="logo-box"><img src="assets/logo-prefeitura.jpg" alt="Brasão de Campo Largo" data-fallback="Prefeitura" data-fallback-class="city"></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span><span data-i18n="footerCredit">Criado e desenvolvido por</span> <b>Enzo da Silva</b> · Projeto ACICLA</span>
+      <span data-i18n="footerOsm">Mapas © colaboradores do OpenStreetMap</span>
+    </div>
   </div>
 </footer>
 
@@ -478,1071 +671,870 @@ textarea.form-control{min-height:125px;resize:vertical}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-  const SUPABASE_URL = "https://bwwhttzgzjkerudscgwr.supabase.co";
+/* =====================================================================
+   CONFIGURAÇÃO DO BANCO (Supabase) — chave pública, pode ficar no site
+   ===================================================================== */
+const SUPABASE_URL = "https://bwwhttzgzjkerudscgwr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nP1yQbnNhga_LjpgcWTCsQ_NgIZokat";
-const supabaseConfigured =
-  SUPABASE_URL === "https://bwwhttzgzjkerudscgwr.supabase.co" &&
-  SUPABASE_ANON_KEY.startsWith("sb_publishable_");
-const db = supabaseConfigured
+const db = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
 const $ = id => document.getElementById(id);
-let reports = [];
-const pendingSupports = new Set();
-let map = null;
-let mapMarker = null;
-let selectedLocation = null;
-let currentLanguage = "pt";
-let feedState = "loading"; // loading | ready | error | setup
-let toastTimer = null;
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 
+/* =====================================================================
+   TRADUÇÕES (português, inglês e espanhol)
+   ===================================================================== */
 const translations = {
 pt:{
-home:"Início",report:"Registrar problema",community:"Comunidade",language:"Idioma",
-heroTag:"Sua comunidade, sua voz",heroTitle:"Uma cidade melhor começa com a sua voz.",
-heroText:"Registre problemas do seu bairro, apoie outras pessoas e ajude a chamar atenção para melhorias na sua comunidade.",
-heroButton:"📢 Registrar um problema",statReports:"Relatos publicados",statSupport:"Apoios da comunidade",
-formHeading:"Conte o que está acontecendo.",formSubheading:"Preencha os dados abaixo. É simples e leva poucos minutos.",
-formTitle:"Registrar um problema",formDescription:"Descreva a situação para que outras pessoas da comunidade possam conhecer e apoiar.",
-titleLabel:"Título do problema",titlePlaceholder:"Ex.: Buraco grande na rua principal",
-categoryLabel:"Categoria",chooseCategory:"Selecione uma categoria",
-catRoad:"Buracos e pavimentação",catLight:"Iluminação pública",catTrash:"Lixo e limpeza",
-catSewage:"Saneamento e água",catTransport:"Transporte público",catSafety:"Segurança e sinalização",
-catAccess:"Acessibilidade",catOther:"Outro",cepLabel:"CEP (opcional)",searchCep:"Buscar",
-cepHint:"Se não souber o CEP, pode preencher o endereço manualmente.",
-streetLabel:"Rua ou avenida",neighborhoodLabel:"Bairro",cityLabel:"Cidade",stateLabel:"Estado",
-addressNote:"📍 Não precisa mexer no mapa para publicar. O endereço escrito já é suficiente. Se quiser, você pode marcar o local no mapa abaixo.",
-mapButton:"🗺️ Mostrar mapa (opcional)",mapHide:"Ocultar mapa",
-mapHint:"Toque no mapa para marcar o local aproximado do problema. Não é obrigatório.",
-descriptionLabel:"Descrição",descriptionPlaceholder:"Explique o que aconteceu, onde está o problema e há quanto tempo...",
-photoLabel:"Foto (opcional)",photoTitle:"Adicionar uma foto",photoHint:"JPG, PNG ou WEBP. Até 50 MB.",
-privacyNote:"Não coloque senhas, documentos, telefones ou dados pessoais na descrição. Evite fotografar rostos e placas de veículos.",
-submitButton:"📢 Publicar relato",feedHeading:"O que acontece na sua comunidade?",
-feedSubheading:"Veja os problemas registrados e apoie aqueles que também precisam de atenção.",
-searchPlaceholder:"Buscar por rua ou problema...",allCategories:"Todas as categorias",
-loading:"Carregando...",noReports:"Nenhum relato encontrado",noReportsText:"Quando alguém publicar um relato, ele aparecerá aqui.",
-footerText:"Uma comunidade mais participativa começa com informação e colaboração.",
-pending:"Pendente",progress:"Em andamento",resolved:"Resolvido",support:"Apoiar",supported:"Apoiado",
-comments:"Comentários",writeComment:"Escreva um comentário...",sendComment:"Enviar comentário",
-noComments:"Ainda não há comentários.",anonymous:"Morador",loadingError:"Não foi possível carregar os relatos.",
+docTitle:"Minha Rua Tem Voz | Campo Largo",language:"Idioma",openMenu:"Abrir menu",
+navHow:"Como funciona",navMap:"Mapa",navReports:"Relatos",navPanel:"Painel",navBusiness:"Comércio",navCta:"📢 Registrar problema",
+heroPill:"Plataforma comunitária de Campo Largo",heroTitle1:"Sua rua tem problemas.",heroTitle2:"Agora ela também tem",heroTitle3:"voz",
+heroLead:"Registre buracos, lâmpadas apagadas, lixo e falta de acessibilidade em menos de dois minutos. A comunidade apoia e a cidade enxerga o que é prioridade.",
+heroCta1:"📢 Registrar um problema",heroCta2:"🗺️ Ver mapa da cidade",
+statReports:"relatos",statSupport:"apoios",statResolved:"resolvidos",statHoods:"bairros",
+phoneHello:"Bom dia, Campo Largo 👋",phoneQuestion:"O que acontece na sua rua?",
+mock1:"Buraco grande perto da escola",mock2:"Poste apagado há duas semanas",mock3:"Lixo acumulado na praça",supportsWord:"apoios",
+badgeResolved:"Problema resolvido!",badgeSupport:"+12 vizinhos apoiaram",
+pending:"Pendente",progress:"Em andamento",resolved:"Resolvido",
+partnersLabel:"Iniciativa apresentada ao",partnerSchool:"Projeto escolar",partnerProposed:"Parceria proposta",
+howEyebrow:"Como funciona",howTitle:"Do problema na calçada à solução, em quatro passos",
+howText:"Sem cadastro, sem aplicativo para instalar e sem burocracia. Funciona em qualquer celular.",
+step1Title:"Registre",step1Text:"Tire uma foto, escolha a categoria e descreva o problema em poucas palavras.",
+step2Title:"Localize",step2Text:"Digite o CEP: o endereço se preenche sozinho e o ponto aparece no mapa.",
+step3Title:"Mobilize",step3Text:"Vizinhos apoiam e comentam. Quanto mais apoio, maior a prioridade.",
+step4Title:"Acompanhe",step4Text:"Veja quando o problema passa para \"em andamento\" e, enfim, \"resolvido\".",
+mapEyebrow:"Mapa da cidade",mapTitle:"Todos os problemas de Campo Largo em um só lugar",
+mapText:"Cada ponto é um relato da comunidade. As cores mostram a categoria e ajudam a enxergar onde estão os problemas.",
+mapSideTitle:"Relatos no mapa",mapSideHint:"Clique em um item para ver no mapa.",
+mapEmpty:"Ainda não há relatos com localização no mapa.",mapUnavailable:"O mapa não está disponível agora. Você pode publicar normalmente sem ele.",
+repEyebrow:"Relatos da comunidade",repTitle:"O que os moradores estão pedindo",
+repText:"Os relatos mais apoiados aparecem primeiro. Apoie os que também afetam você.",
+all:"Todas",searchAria:"Buscar relatos",searchPlaceholder:"Buscar por rua, bairro ou problema",
+reportsFound:"Relatos encontrados: {n}",rank:"#{n} mais apoiado",
+supportersZero:"Seja o primeiro a apoiar este relato",supportersOne:"1 vizinho apoia este relato",supportersMany:"{n} vizinhos apoiam este relato",
+support:"🧡 Apoiar",supported:"✓ Apoiado",seeOnMap:"Ver no mapa",noLocation:"Este relato não tem localização no mapa",
+comments:"Comentários",writeComment:"Escreva um comentário...",sendComment:"Enviar comentário",noComments:"Ainda não há comentários.",
+anonymous:"Morador",commentSent:"Comentário enviado!",commentError:"Não foi possível enviar o comentário.",
+noReports:"Nenhum relato encontrado.",noReportsText:"Tente outra busca ou categoria.",
+emptyAll:"Ainda não há relatos.",emptyAllText:"Seja o primeiro a registrar um problema da sua rua!",
+loading:"Carregando...",loadingReports:"Carregando relatos...",loadingError:"Não foi possível carregar os relatos.",
+loadingErrorHint:"Confira sua conexão e tente novamente.",addressUnknown:"Endereço não informado",photoAlt:"Foto do problema",
+formEyebrow:"Registrar problema",formHeading:"Conte o que está acontecendo na sua rua",formSubheading:"Leva menos de dois minutos. Seu relato é anônimo.",
+formTitle:"Novo relato",requiredNote:"Campo obrigatório",categoryLabel:"Categoria",
+titleLabel:"Título",titlePlaceholder:"Ex.: Buraco grande em frente à escola",
+cepLabel:"CEP",cepButton:"Buscar CEP",searching:"Buscando...",
+streetLabel:"Rua",streetPlaceholder:"Nome da rua",hoodLabel:"Bairro",hoodPlaceholder:"Nome do bairro",
+cityLabel:"Cidade",stateLabel:"Estado (UF)",descLabel:"Descrição",descPlaceholder:"O que aconteceu, onde fica exatamente e há quanto tempo?",
+photoLabel:"Foto (opcional)",photoTitle:"Toque para adicionar uma foto",photoHint:"JPG, PNG ou WEBP · até 50 MB",previewAlt:"Prévia da foto selecionada",
+privacyNote:"🔒 Não coloque nomes, telefones ou documentos. Evite fotografar rostos e placas de veículos.",
+submitButton:"📢 Publicar relato",sending:"Enviando...",
+mapCardTitle:"📍 Local do problema",mapCardText:"O ponto aparece sozinho ao buscar o CEP. Toque no mapa ou arraste o pino para ajustar. É opcional.",
+tipTitle:"💡 Dica para um bom relato",tipText:"Um título curto e uma foto nítida fazem o relato receber mais apoios e ser resolvido mais rápido.",
+fillRequired:"Preencha a categoria, o título, a rua, o bairro, a cidade, o estado e a descrição.",
 cepInvalid:"Digite um CEP válido com 8 números.",cepNotFound:"CEP não encontrado. Confira os números ou preencha manualmente.",
-cepError:"Não foi possível consultar o CEP. Tente novamente ou preencha manualmente.",
-photoTooLarge:"A imagem deve ter no máximo 50 MB.",photoInvalid:"Escolha uma imagem JPG, PNG ou WEBP.",
-fillRequired:"Preencha todos os campos obrigatórios.",published:"Relato publicado com sucesso!",
-publishError:"Não foi possível publicar. Confira a conexão e tente novamente.",
-commentError:"Não foi possível enviar o comentário.",commentSent:"Comentário enviado!",
-supportError:"Não foi possível registrar seu apoio.",alreadySupported:"Você já apoiou este relato neste navegador.",
-mapUnavailable:"O mapa não está disponível agora. Você pode publicar normalmente sem ele.",
+cepError:"Não foi possível consultar o CEP. Tente novamente ou preencha manualmente.",addressFilled:"📍 Endereço encontrado! Confira os campos.",
+photoInvalid:"Escolha uma imagem JPG, PNG ou WEBP.",photoTooLarge:"A imagem deve ter no máximo 50 MB.",
 photoUploadError:"Não foi possível enviar a foto. Tente outra imagem.",
-dateUnknown:"Data não informada",
-addressFilled:"Endereço preenchido. Confira os campos!",
-sending:"Enviando...",
-addressUnknown:"Endereço não informado",
-reportsFound:"Relatos encontrados: {n}",
-openMenu:"Abrir menu",
-searchAria:"Buscar relatos",
-filterAria:"Filtrar por categoria",
-photoAlt:"Foto do problema",
-previewAlt:"Prévia da foto selecionada",
-docTitle:"Minha Rua Tem Voz | Fórum Comunitário",
-loadingReports:"Carregando relatos...",
-loadingErrorHint:"Confira sua conexão e tente novamente.",
-setupTitle:"Conecte o Supabase",
-setupText:"Adicione a URL e a chave pública no início do JavaScript para carregar e publicar relatos.",
-setupMode:"Modo de configuração",
-streetPlaceholder:"Nome da rua",
-neighborhoodPlaceholder:"Nome do bairro",
-cityPlaceholder:"Sua cidade",
-statePlaceholder:"Ex.: PR"
+published:"✅ Relato publicado com sucesso!",publishError:"Não foi possível publicar. Confira a conexão e tente novamente.",
+supportThanks:"🧡 Obrigado pelo apoio!",supportError:"Não foi possível registrar seu apoio.",alreadySupported:"Você já apoiou este relato neste navegador.",
+panelEyebrow:"Painel de impacto",panelTitle:"Dados para quem decide",
+panelText:"Uma visão organizada das demandas da cidade, pensada para a prefeitura, a ACICLA e as associações de bairro.",
+barsTitle:"Relatos por categoria",barsText:"Quais problemas mais aparecem na cidade.",
+donutTitle:"Situação dos relatos",donutText:"Quanto já foi resolvido.",
+topTitle:"Prioridades da comunidade",topText:"Os relatos com mais apoios.",panelEmpty:"Os dados aparecem assim que houver relatos.",
+bizEyebrow:"Para o comércio local",bizTitle:"Rua bem cuidada é rua com mais clientes",
+bizText:"Calçadas seguras, iluminação e limpeza trazem movimento para o comércio. Empresas que apoiam o projeto mostram compromisso com o bairro onde estão.",
+biz1Bold:"Selo \"Empresa Amiga do Bairro\"",biz1Text:"para exibir na vitrine e nas redes sociais.",
+biz2Bold:"Relatórios por bairro",biz2Text:"com as principais demandas da região.",
+biz3Bold:"Ações em conjunto",biz3Text:"com a ACICLA e as associações de moradores.",
+sealSmall:"Selo",sealName:"Empresa Amiga do Bairro",
+footerText:"Uma plataforma comunitária para registrar problemas urbanos, mobilizar vizinhos e ajudar a cidade a definir prioridades.",
+footerNav:"Navegação",footerCredit:"Criado e desenvolvido por",footerOsm:"Mapas © colaboradores do OpenStreetMap",
+catRoad:"Pavimentação",catLight:"Iluminação",catTrash:"Lixo e limpeza",catSewage:"Saneamento",
+catTransport:"Transporte",catSafety:"Segurança",catAccess:"Acessibilidade",catOther:"Outro"
 },
 en:{
-home:"Home",report:"Report a problem",community:"Community",language:"Language",
-heroTag:"Your community, your voice",heroTitle:"A better city starts with your voice.",
-heroText:"Report neighborhood problems, support others and help bring attention to improvements in your community.",
-heroButton:"📢 Report a problem",statReports:"Reports published",statSupport:"Community support",
-formHeading:"Tell us what is happening.",formSubheading:"Fill in the details below. It is simple and takes only a few minutes.",
-formTitle:"Report a problem",formDescription:"Describe the situation so other people in the community can learn about it and support it.",
-titleLabel:"Problem title",titlePlaceholder:"E.g. Large pothole on the main street",
-categoryLabel:"Category",chooseCategory:"Choose a category",catRoad:"Roads and potholes",
-catLight:"Public lighting",catTrash:"Trash and cleaning",catSewage:"Water and sanitation",
-catTransport:"Public transport",catSafety:"Safety and signs",catAccess:"Accessibility",catOther:"Other",
-cepLabel:"Postal code – CEP (optional)",searchCep:"Search",cepHint:"If you do not know the postal code, enter the address manually.",
-streetLabel:"Street or avenue",neighborhoodLabel:"Neighborhood",cityLabel:"City",stateLabel:"State",
-addressNote:"📍 You do not need the map to publish. The written address is enough. You can mark the location on the map below if you wish.",
-mapButton:"🗺️ Show map (optional)",mapHide:"Hide map",mapHint:"Tap the map to mark the approximate location. This is optional.",
-descriptionLabel:"Description",descriptionPlaceholder:"Explain what happened, where the problem is and how long it has been there...",
-photoLabel:"Photo (optional)",photoTitle:"Add a photo",photoHint:"JPG, PNG or WEBP. Up to 50 MB.",
-privacyNote:"Do not include passwords, documents, phone numbers or personal information. Avoid photographing faces and license plates.",
-submitButton:"📢 Publish report",feedHeading:"What is happening in your community?",
-feedSubheading:"See reported problems and support those that also need attention.",
-searchPlaceholder:"Search by street or problem...",allCategories:"All categories",
-loading:"Loading...",noReports:"No reports found",noReportsText:"When someone publishes a report, it will appear here.",
-footerText:"A more engaged community starts with information and collaboration.",
-pending:"Pending",progress:"In progress",resolved:"Resolved",support:"Support",supported:"Supported",
+docTitle:"Minha Rua Tem Voz | Campo Largo",language:"Language",openMenu:"Open menu",
+navHow:"How it works",navMap:"Map",navReports:"Reports",navPanel:"Dashboard",navBusiness:"Business",navCta:"📢 Report a problem",
+heroPill:"Campo Largo community platform",heroTitle1:"Your street has problems.",heroTitle2:"Now it also has a",heroTitle3:"voice",
+heroLead:"Report potholes, broken streetlights, trash and lack of accessibility in under two minutes. The community supports it and the city sees what matters most.",
+heroCta1:"📢 Report a problem",heroCta2:"🗺️ See the city map",
+statReports:"reports",statSupport:"supports",statResolved:"resolved",statHoods:"neighborhoods",
+phoneHello:"Good morning, Campo Largo 👋",phoneQuestion:"What is happening on your street?",
+mock1:"Large pothole near the school",mock2:"Streetlight out for two weeks",mock3:"Trash piling up in the square",supportsWord:"supports",
+badgeResolved:"Problem solved!",badgeSupport:"+12 neighbors supported",
+pending:"Pending",progress:"In progress",resolved:"Resolved",
+partnersLabel:"Initiative presented to",partnerSchool:"School project",partnerProposed:"Proposed partnership",
+howEyebrow:"How it works",howTitle:"From the problem on the sidewalk to the solution, in four steps",
+howText:"No sign-up, no app to install and no red tape. It works on any phone.",
+step1Title:"Report",step1Text:"Take a photo, choose a category and describe the problem in a few words.",
+step2Title:"Locate",step2Text:"Type the postal code: the address fills in by itself and the spot appears on the map.",
+step3Title:"Mobilize",step3Text:"Neighbors support and comment. The more support, the higher the priority.",
+step4Title:"Follow up",step4Text:"See when the problem moves to \"in progress\" and, finally, \"resolved\".",
+mapEyebrow:"City map",mapTitle:"Every problem in Campo Largo in one place",
+mapText:"Each pin is a community report. Colors show the category and help you see where the problems are.",
+mapSideTitle:"Reports on the map",mapSideHint:"Click an item to see it on the map.",
+mapEmpty:"There are no reports with a map location yet.",mapUnavailable:"The map is unavailable right now. You can publish without it.",
+repEyebrow:"Community reports",repTitle:"What residents are asking for",
+repText:"The most supported reports appear first. Support the ones that affect you too.",
+all:"All",searchAria:"Search reports",searchPlaceholder:"Search by street, neighborhood or problem",
+reportsFound:"Reports found: {n}",rank:"#{n} most supported",
+supportersZero:"Be the first to support this report",supportersOne:"1 neighbor supports this report",supportersMany:"{n} neighbors support this report",
+support:"🧡 Support",supported:"✓ Supported",seeOnMap:"See on map",noLocation:"This report has no map location",
 comments:"Comments",writeComment:"Write a comment...",sendComment:"Send comment",noComments:"No comments yet.",
-anonymous:"Resident",loadingError:"Could not load reports.",cepInvalid:"Enter a valid 8-digit postal code.",
-cepNotFound:"Postal code not found. Check the numbers or enter the address manually.",
-cepError:"Could not look up the postal code. Try again or enter the address manually.",
-photoTooLarge:"Image must be no larger than 50 MB.",photoInvalid:"Choose a JPG, PNG or WEBP image.",
-fillRequired:"Please fill in all required fields.",published:"Report published successfully!",
-publishError:"Could not publish. Check your connection and try again.",
-commentError:"Could not send the comment.",commentSent:"Comment sent!",supportError:"Could not register your support.",
-alreadySupported:"You have already supported this report in this browser.",
-mapUnavailable:"The map is unavailable right now. You can publish without it.",
-photoUploadError:"Could not upload the photo. Try another image.",dateUnknown:"Date unavailable",
-addressFilled:"Address filled in. Please check the fields!",
-sending:"Sending...",
-addressUnknown:"Address not provided",
-reportsFound:"Reports found: {n}",
-openMenu:"Open menu",
-searchAria:"Search reports",
-filterAria:"Filter by category",
-photoAlt:"Photo of the problem",
-previewAlt:"Preview of the selected photo",
-docTitle:"Minha Rua Tem Voz | Community Forum",
-loadingReports:"Loading reports...",
-loadingErrorHint:"Check your connection and try again.",
-setupTitle:"Connect Supabase",
-setupText:"Add the URL and the public key at the top of the JavaScript to load and publish reports.",
-setupMode:"Setup mode",
-streetPlaceholder:"Street name",
-neighborhoodPlaceholder:"Neighborhood name",
-cityPlaceholder:"Your city",
-statePlaceholder:"E.g. PR"
+anonymous:"Resident",commentSent:"Comment sent!",commentError:"Could not send the comment.",
+noReports:"No reports found.",noReportsText:"Try another search or category.",
+emptyAll:"There are no reports yet.",emptyAllText:"Be the first to report a problem on your street!",
+loading:"Loading...",loadingReports:"Loading reports...",loadingError:"Could not load reports.",
+loadingErrorHint:"Check your connection and try again.",addressUnknown:"Address not provided",photoAlt:"Photo of the problem",
+formEyebrow:"Report a problem",formHeading:"Tell us what is happening on your street",formSubheading:"It takes less than two minutes. Your report is anonymous.",
+formTitle:"New report",requiredNote:"Required field",categoryLabel:"Category",
+titleLabel:"Title",titlePlaceholder:"E.g. Large pothole in front of the school",
+cepLabel:"Postal code (CEP)",cepButton:"Find address",searching:"Searching...",
+streetLabel:"Street",streetPlaceholder:"Street name",hoodLabel:"Neighborhood",hoodPlaceholder:"Neighborhood name",
+cityLabel:"City",stateLabel:"State",descLabel:"Description",descPlaceholder:"What happened, where exactly is it and for how long?",
+photoLabel:"Photo (optional)",photoTitle:"Tap to add a photo",photoHint:"JPG, PNG or WEBP · up to 50 MB",previewAlt:"Preview of the selected photo",
+privacyNote:"🔒 Do not include names, phone numbers or documents. Avoid photographing faces and license plates.",
+submitButton:"📢 Publish report",sending:"Sending...",
+mapCardTitle:"📍 Problem location",mapCardText:"The pin appears automatically when you search the postal code. Tap the map or drag the pin to adjust. Optional.",
+tipTitle:"💡 Tip for a good report",tipText:"A short title and a clear photo help the report get more support and be solved faster.",
+fillRequired:"Fill in the category, title, street, neighborhood, city, state and description.",
+cepInvalid:"Enter a valid 8-digit postal code.",cepNotFound:"Postal code not found. Check the numbers or fill in the address manually.",
+cepError:"Could not look up the postal code. Try again or fill in the address manually.",addressFilled:"📍 Address found! Please check the fields.",
+photoInvalid:"Choose a JPG, PNG or WEBP image.",photoTooLarge:"The image must be 50 MB or smaller.",
+photoUploadError:"Could not upload the photo. Try another image.",
+published:"✅ Report published successfully!",publishError:"Could not publish. Check your connection and try again.",
+supportThanks:"🧡 Thank you for your support!",supportError:"Could not register your support.",alreadySupported:"You have already supported this report in this browser.",
+panelEyebrow:"Impact dashboard",panelTitle:"Data for decision makers",
+panelText:"An organized view of the city's needs, designed for the city hall, ACICLA and neighborhood associations.",
+barsTitle:"Reports by category",barsText:"Which problems appear most often in the city.",
+donutTitle:"Report status",donutText:"How much has already been solved.",
+topTitle:"Community priorities",topText:"The most supported reports.",panelEmpty:"Data will appear as soon as there are reports.",
+bizEyebrow:"For local businesses",bizTitle:"A well-kept street means more customers",
+bizText:"Safe sidewalks, lighting and clean streets bring more people to local shops. Businesses that support the project show commitment to their neighborhood.",
+biz1Bold:"\"Neighborhood-Friendly Business\" seal",biz1Text:"to display in the shop window and on social media.",
+biz2Bold:"Neighborhood reports",biz2Text:"with the main needs of each area.",
+biz3Bold:"Joint actions",biz3Text:"with ACICLA and residents' associations.",
+sealSmall:"Seal",sealName:"Neighborhood-Friendly Business",
+footerText:"A community platform to report urban problems, mobilize neighbors and help the city set priorities.",
+footerNav:"Navigation",footerCredit:"Created and developed by",footerOsm:"Maps © OpenStreetMap contributors",
+catRoad:"Roads",catLight:"Lighting",catTrash:"Trash & cleaning",catSewage:"Water & sewage",
+catTransport:"Transport",catSafety:"Safety",catAccess:"Accessibility",catOther:"Other"
 },
 es:{
-home:"Inicio",report:"Informar un problema",community:"Comunidad",language:"Idioma",
-heroTag:"Tu comunidad, tu voz",heroTitle:"Una ciudad mejor comienza con tu voz.",
-heroText:"Informa problemas de tu barrio, apoya a otras personas y ayuda a mejorar tu comunidad.",
-heroButton:"📢 Informar un problema",statReports:"Informes publicados",statSupport:"Apoyos de la comunidad",
-formHeading:"Cuéntanos qué está pasando.",formSubheading:"Completa los datos. Es sencillo y lleva pocos minutos.",
-formTitle:"Informar un problema",formDescription:"Describe la situación para que otras personas puedan conocerla y apoyarla.",
-titleLabel:"Título del problema",titlePlaceholder:"Ej.: Gran bache en la calle principal",
-categoryLabel:"Categoría",chooseCategory:"Selecciona una categoría",catRoad:"Baches y pavimentación",
-catLight:"Iluminación pública",catTrash:"Basura y limpieza",catSewage:"Agua y saneamiento",
-catTransport:"Transporte público",catSafety:"Seguridad y señalización",catAccess:"Accesibilidad",catOther:"Otro",
-cepLabel:"Código postal – CEP (opcional)",searchCep:"Buscar",cepHint:"Si no conoces el código postal, puedes escribir la dirección manualmente.",
-streetLabel:"Calle o avenida",neighborhoodLabel:"Barrio",cityLabel:"Ciudad",stateLabel:"Estado",
-addressNote:"📍 No necesitas el mapa para publicar. La dirección escrita es suficiente. Si quieres, puedes marcar el lugar en el mapa.",
-mapButton:"🗺️ Mostrar mapa (opcional)",mapHide:"Ocultar mapa",mapHint:"Toca el mapa para marcar la ubicación aproximada. Es opcional.",
-descriptionLabel:"Descripción",descriptionPlaceholder:"Explica qué pasó, dónde está el problema y desde cuándo...",
-photoLabel:"Foto (opcional)",photoTitle:"Añadir una foto",photoHint:"JPG, PNG o WEBP. Hasta 50 MB.",
-privacyNote:"No incluyas contraseñas, documentos, teléfonos ni datos personales. Evita fotografiar rostros y matrículas.",
-submitButton:"📢 Publicar informe",feedHeading:"¿Qué pasa en tu comunidad?",
-feedSubheading:"Consulta los problemas registrados y apoya los que necesitan atención.",
-searchPlaceholder:"Buscar por calle o problema...",allCategories:"Todas las categorías",
-loading:"Cargando...",noReports:"No se encontraron informes",noReportsText:"Los informes publicados aparecerán aquí.",
-footerText:"Una comunidad participativa comienza con información y colaboración.",
-pending:"Pendiente",progress:"En curso",resolved:"Resuelto",support:"Apoyar",supported:"Apoyado",
-comments:"Comentarios",writeComment:"Escribe un comentario...",sendComment:"Enviar comentario",
-noComments:"Todavía no hay comentarios.",anonymous:"Vecino",loadingError:"No se pudieron cargar los informes.",
-cepInvalid:"Introduce un código postal válido de 8 dígitos.",cepNotFound:"Código postal no encontrado. Comprueba los números o escribe la dirección manualmente.",
-cepError:"No se pudo consultar el código postal. Inténtalo de nuevo o escribe la dirección manualmente.",photoTooLarge:"La imagen debe tener un máximo de 50 MB.",
-photoInvalid:"Elige una imagen JPG, PNG o WEBP.",fillRequired:"Completa todos los campos obligatorios.",
-published:"¡Informe publicado correctamente!",publishError:"No se pudo publicar. Comprueba la conexión.",
-commentError:"No se pudo enviar el comentario.",commentSent:"¡Comentario enviado!",supportError:"No se pudo registrar tu apoyo.",
-alreadySupported:"Ya has apoyado este informe en este navegador.",mapUnavailable:"El mapa no está disponible. Puedes publicar sin él.",
-photoUploadError:"No se pudo subir la foto.",dateUnknown:"Fecha no disponible",
-addressFilled:"Dirección completada. ¡Revisa los campos!",
-sending:"Enviando...",
-addressUnknown:"Dirección no informada",
-reportsFound:"Informes encontrados: {n}",
-openMenu:"Abrir menú",
-searchAria:"Buscar informes",
-filterAria:"Filtrar por categoría",
-photoAlt:"Foto del problema",
-previewAlt:"Vista previa de la foto seleccionada",
-docTitle:"Minha Rua Tem Voz | Foro comunitario",
-loadingReports:"Cargando informes...",
-loadingErrorHint:"Comprueba tu conexión e inténtalo de nuevo.",
-setupTitle:"Conecta Supabase",
-setupText:"Añade la URL y la clave pública al inicio del JavaScript para cargar y publicar informes.",
-setupMode:"Modo de configuración",
-streetPlaceholder:"Nombre de la calle",
-neighborhoodPlaceholder:"Nombre del barrio",
-cityPlaceholder:"Tu ciudad",
-statePlaceholder:"Ej.: PR"
-},
-fr:{
-home:"Accueil",report:"Signaler un problème",community:"Communauté",language:"Langue",
-heroTag:"Votre communauté, votre voix",heroTitle:"Une meilleure ville commence avec votre voix.",
-heroText:"Signalez les problèmes de votre quartier et soutenez les améliorations de votre communauté.",
-heroButton:"📢 Signaler un problème",statReports:"Signalements publiés",statSupport:"Soutiens communautaires",
-formHeading:"Dites-nous ce qui se passe.",formSubheading:"Remplissez les informations. C'est simple et rapide.",
-formTitle:"Signaler un problème",formDescription:"Décrivez la situation pour que les autres habitants puissent la connaître et la soutenir.",
-titleLabel:"Titre du problème",titlePlaceholder:"Ex. : Grand nid-de-poule dans la rue principale",
-categoryLabel:"Catégorie",chooseCategory:"Choisir une catégorie",catRoad:"Routes et nids-de-poule",
-catLight:"Éclairage public",catTrash:"Déchets et nettoyage",catSewage:"Eau et assainissement",
-catTransport:"Transports publics",catSafety:"Sécurité et signalisation",catAccess:"Accessibilité",catOther:"Autre",
-cepLabel:"Code postal – CEP (facultatif)",searchCep:"Rechercher",cepHint:"Si vous ne connaissez pas le code postal, vous pouvez saisir l'adresse manuellement.",
-streetLabel:"Rue ou avenue",neighborhoodLabel:"Quartier",cityLabel:"Ville",stateLabel:"État",
-addressNote:"📍 La carte n'est pas obligatoire. L'adresse écrite suffit. Vous pouvez marquer l'endroit sur la carte si vous le souhaitez.",
-mapButton:"🗺️ Afficher la carte (facultatif)",mapHide:"Masquer la carte",mapHint:"Touchez la carte pour marquer l'emplacement approximatif.",
-descriptionLabel:"Description",descriptionPlaceholder:"Expliquez ce qui s'est passé, où se trouve le problème et depuis quand...",
-photoLabel:"Photo (facultative)",photoTitle:"Ajouter une photo",photoHint:"JPG, PNG ou WEBP. Jusqu'à 50 Mo.",
-privacyNote:"N'incluez pas de mots de passe, documents, numéros de téléphone ou données personnelles. Évitez de photographier des visages et des plaques d'immatriculation.",
-submitButton:"📢 Publier le signalement",feedHeading:"Que se passe-t-il dans votre communauté ?",
-feedSubheading:"Consultez les problèmes signalés et soutenez ceux qui nécessitent une attention.",
-searchPlaceholder:"Rechercher une rue ou un problème...",allCategories:"Toutes les catégories",
-loading:"Chargement...",noReports:"Aucun signalement trouvé",noReportsText:"Les signalements publiés apparaîtront ici.",
-footerText:"Une communauté participative commence par l'information et la collaboration.",
-pending:"En attente",progress:"En cours",resolved:"Résolu",support:"Soutenir",supported:"Soutenu",
-comments:"Commentaires",writeComment:"Écrire un commentaire...",sendComment:"Envoyer le commentaire",noComments:"Aucun commentaire.",
-anonymous:"Habitant",loadingError:"Impossible de charger les signalements.",
-cepInvalid:"Saisissez un code postal valide de 8 chiffres.",cepNotFound:"Code postal introuvable. Vérifiez ou saisissez l'adresse manuellement.",
-cepError:"Impossible de consulter le code postal. Réessayez ou saisissez l'adresse manuellement.",photoTooLarge:"L'image doit faire 50 Mo maximum.",
-photoInvalid:"Choisissez une image JPG, PNG ou WEBP.",fillRequired:"Remplissez tous les champs obligatoires.",
-published:"Signalement publié !",publishError:"Publication impossible. Vérifiez votre connexion.",
-commentError:"Impossible d'envoyer le commentaire.",commentSent:"Commentaire envoyé !",supportError:"Impossible d'enregistrer votre soutien.",
-alreadySupported:"Vous avez déjà soutenu ce signalement sur ce navigateur.",
-mapUnavailable:"Carte indisponible. Vous pouvez publier sans elle.",photoUploadError:"Échec de l'envoi de la photo.",dateUnknown:"Date inconnue",
-addressFilled:"Adresse remplie. Vérifiez les champs !",
-sending:"Envoi en cours...",
-addressUnknown:"Adresse non renseignée",
-reportsFound:"Signalements trouvés : {n}",
-openMenu:"Ouvrir le menu",
-searchAria:"Rechercher des signalements",
-filterAria:"Filtrer par catégorie",
-photoAlt:"Photo du problème",
-previewAlt:"Aperçu de la photo sélectionnée",
-docTitle:"Minha Rua Tem Voz | Forum communautaire",
-loadingReports:"Chargement des signalements...",
-loadingErrorHint:"Vérifiez votre connexion et réessayez.",
-setupTitle:"Connectez Supabase",
-setupText:"Ajoutez l'URL et la clé publique au début du JavaScript pour charger et publier des signalements.",
-setupMode:"Mode configuration",
-streetPlaceholder:"Nom de la rue",
-neighborhoodPlaceholder:"Nom du quartier",
-cityPlaceholder:"Votre ville",
-statePlaceholder:"Ex. : PR"
-},
-de:{
-home:"Start",report:"Problem melden",community:"Gemeinschaft",language:"Sprache",
-heroTag:"Deine Gemeinschaft, deine Stimme",heroTitle:"Eine bessere Stadt beginnt mit deiner Stimme.",
-heroText:"Melde Probleme in deinem Viertel und unterstütze Verbesserungen in deiner Gemeinschaft.",
-heroButton:"📢 Problem melden",statReports:"Veröffentlichte Meldungen",statSupport:"Unterstützungen",
-formHeading:"Was ist passiert?",formSubheading:"Fülle die Angaben aus. Es ist einfach und dauert nur wenige Minuten.",
-formTitle:"Problem melden",formDescription:"Beschreibe die Situation, damit andere Menschen sie kennenlernen und unterstützen können.",
-titleLabel:"Titel des Problems",titlePlaceholder:"Z. B. Großes Schlagloch in der Hauptstraße",
-categoryLabel:"Kategorie",chooseCategory:"Kategorie auswählen",catRoad:"Straßen und Schlaglöcher",
-catLight:"Straßenbeleuchtung",catTrash:"Müll und Reinigung",catSewage:"Wasser und Abwasser",
-catTransport:"Öffentliche Verkehrsmittel",catSafety:"Sicherheit und Beschilderung",catAccess:"Barrierefreiheit",catOther:"Sonstiges",
-cepLabel:"Postleitzahl – CEP (optional)",searchCep:"Suchen",cepHint:"Wenn du die Postleitzahl nicht kennst, kannst du die Adresse auch manuell eingeben.",
-streetLabel:"Straße oder Allee",neighborhoodLabel:"Stadtteil",cityLabel:"Stadt",stateLabel:"Bundesstaat",
-addressNote:"📍 Die Karte ist nicht erforderlich. Die schriftliche Adresse reicht aus. Du kannst den Ort optional auf der Karte markieren.",
-mapButton:"🗺️ Karte anzeigen (optional)",mapHide:"Karte ausblenden",mapHint:"Tippe auf die Karte, um den ungefähren Ort zu markieren.",
-descriptionLabel:"Beschreibung",descriptionPlaceholder:"Erkläre, was passiert ist, wo das Problem liegt und seit wann...",
-photoLabel:"Foto (optional)",photoTitle:"Foto hinzufügen",photoHint:"JPG, PNG oder WEBP. Bis zu 50 MB.",
-privacyNote:"Keine Passwörter, Dokumente, Telefonnummern oder persönlichen Daten angeben. Gesichter und Kennzeichen vermeiden.",
-submitButton:"📢 Meldung veröffentlichen",feedHeading:"Was passiert in deiner Gemeinschaft?",
-feedSubheading:"Sieh dir gemeldete Probleme an und unterstütze wichtige Anliegen.",
-searchPlaceholder:"Nach Straße oder Problem suchen...",allCategories:"Alle Kategorien",
-loading:"Laden...",noReports:"Keine Meldungen gefunden",noReportsText:"Veröffentlichte Meldungen erscheinen hier.",
-footerText:"Eine engagierte Gemeinschaft beginnt mit Information und Zusammenarbeit.",
-pending:"Ausstehend",progress:"In Bearbeitung",resolved:"Gelöst",support:"Unterstützen",supported:"Unterstützt",
-comments:"Kommentare",writeComment:"Kommentar schreiben...",sendComment:"Kommentar senden",noComments:"Noch keine Kommentare.",
-anonymous:"Einwohner",loadingError:"Meldungen konnten nicht geladen werden.",
-cepInvalid:"Bitte eine gültige achtstellige Postleitzahl eingeben.",cepNotFound:"Postleitzahl nicht gefunden. Prüfe sie oder gib die Adresse manuell ein.",
-cepError:"Postleitzahl konnte nicht abgefragt werden. Versuche es erneut oder gib die Adresse manuell ein.",photoTooLarge:"Das Bild darf höchstens 50 MB groß sein.",
-photoInvalid:"Bitte JPG, PNG oder WEBP auswählen.",fillRequired:"Bitte alle Pflichtfelder ausfüllen.",
-published:"Meldung erfolgreich veröffentlicht!",publishError:"Veröffentlichung fehlgeschlagen. Prüfe deine Verbindung.",
-commentError:"Kommentar konnte nicht gesendet werden.",commentSent:"Kommentar gesendet!",supportError:"Unterstützung konnte nicht gespeichert werden.",
-alreadySupported:"Du hast diese Meldung in diesem Browser bereits unterstützt.",
-mapUnavailable:"Karte nicht verfügbar. Du kannst ohne Karte veröffentlichen.",photoUploadError:"Foto konnte nicht hochgeladen werden.",dateUnknown:"Datum unbekannt",
-addressFilled:"Adresse ausgefüllt. Bitte prüfe die Felder!",
-sending:"Wird gesendet...",
-addressUnknown:"Keine Adresse angegeben",
-reportsFound:"Gefundene Meldungen: {n}",
-openMenu:"Menü öffnen",
-searchAria:"Meldungen durchsuchen",
-filterAria:"Nach Kategorie filtern",
-photoAlt:"Foto des Problems",
-previewAlt:"Vorschau des ausgewählten Fotos",
-docTitle:"Minha Rua Tem Voz | Gemeinschaftsforum",
-loadingReports:"Meldungen werden geladen...",
-loadingErrorHint:"Prüfe deine Verbindung und versuche es erneut.",
-setupTitle:"Supabase verbinden",
-setupText:"Füge die URL und den öffentlichen Schlüssel am Anfang des JavaScripts ein, um Meldungen zu laden und zu veröffentlichen.",
-setupMode:"Einrichtungsmodus",
-streetPlaceholder:"Straßenname",
-neighborhoodPlaceholder:"Name des Stadtteils",
-cityPlaceholder:"Deine Stadt",
-statePlaceholder:"Z. B. PR"
-},
-it:{
-home:"Home",report:"Segnala un problema",community:"Comunità",language:"Lingua",
-heroTag:"La tua comunità, la tua voce",heroTitle:"Una città migliore inizia dalla tua voce.",
-heroText:"Segnala i problemi del quartiere e sostieni i miglioramenti della tua comunità.",
-heroButton:"📢 Segnala un problema",statReports:"Segnalazioni pubblicate",statSupport:"Sostegni della comunità",
-formHeading:"Raccontaci cosa succede.",formSubheading:"Compila i dati. È semplice e richiede pochi minuti.",
-formTitle:"Segnala un problema",formDescription:"Descrivi la situazione affinché gli altri residenti possano conoscerla e sostenerla.",
-titleLabel:"Titolo del problema",titlePlaceholder:"Es.: Grande buca nella strada principale",
-categoryLabel:"Categoria",chooseCategory:"Scegli una categoria",catRoad:"Buche e pavimentazione",
-catLight:"Illuminazione pubblica",catTrash:"Rifiuti e pulizia",catSewage:"Acqua e servizi igienici",
-catTransport:"Trasporto pubblico",catSafety:"Sicurezza e segnaletica",catAccess:"Accessibilità",catOther:"Altro",
-cepLabel:"Codice postale – CEP (facoltativo)",searchCep:"Cerca",cepHint:"Se non conosci il codice postale, puoi inserire l'indirizzo manualmente.",
-streetLabel:"Via o viale",neighborhoodLabel:"Quartiere",cityLabel:"Città",stateLabel:"Stato",
-addressNote:"📍 La mappa non è obbligatoria. L'indirizzo scritto è sufficiente. Puoi segnare il luogo sulla mappa se vuoi.",
-mapButton:"🗺️ Mostra mappa (facoltativo)",mapHide:"Nascondi mappa",mapHint:"Tocca la mappa per segnare la posizione approssimativa.",
-descriptionLabel:"Descrizione",descriptionPlaceholder:"Spiega cosa è successo, dove si trova il problema e da quanto tempo...",
-photoLabel:"Foto (facoltativa)",photoTitle:"Aggiungi una foto",photoHint:"JPG, PNG o WEBP. Fino a 50 MB.",
-privacyNote:"Non inserire password, documenti, numeri di telefono o dati personali. Evita di fotografare volti e targhe.",
-submitButton:"📢 Pubblica segnalazione",feedHeading:"Cosa succede nella tua comunità?",
-feedSubheading:"Consulta i problemi segnalati e sostieni quelli che richiedono attenzione.",
-searchPlaceholder:"Cerca per via o problema...",allCategories:"Tutte le categorie",
-loading:"Caricamento...",noReports:"Nessuna segnalazione trovata",noReportsText:"Le segnalazioni pubblicate appariranno qui.",
-footerText:"Una comunità partecipe inizia con informazione e collaborazione.",
-pending:"In attesa",progress:"In corso",resolved:"Risolto",support:"Sostieni",supported:"Sostenuto",
-comments:"Commenti",writeComment:"Scrivi un commento...",sendComment:"Invia commento",noComments:"Ancora nessun commento.",
-anonymous:"Residente",loadingError:"Impossibile caricare le segnalazioni.",
-cepInvalid:"Inserisci un codice postale valido di 8 cifre.",cepNotFound:"Codice postale non trovato. Controlla i numeri o inserisci l'indirizzo manualmente.",
-cepError:"Impossibile consultare il codice postale. Riprova o inserisci l'indirizzo manualmente.",photoTooLarge:"L'immagine deve essere al massimo di 50 MB.",
-photoInvalid:"Scegli un'immagine JPG, PNG o WEBP.",fillRequired:"Compila tutti i campi obbligatori.",
-published:"Segnalazione pubblicata!",publishError:"Pubblicazione non riuscita. Controlla la connessione.",
-commentError:"Impossibile inviare il commento.",commentSent:"Commento inviato!",supportError:"Impossibile registrare il sostegno.",
-alreadySupported:"Hai già sostenuto questa segnalazione in questo browser.",
-mapUnavailable:"Mappa non disponibile. Puoi pubblicare senza.",photoUploadError:"Impossibile caricare la foto.",dateUnknown:"Data non disponibile",
-addressFilled:"Indirizzo compilato. Controlla i campi!",
-sending:"Invio in corso...",
-addressUnknown:"Indirizzo non indicato",
-reportsFound:"Segnalazioni trovate: {n}",
-openMenu:"Apri menu",
-searchAria:"Cerca segnalazioni",
-filterAria:"Filtra per categoria",
-photoAlt:"Foto del problema",
-previewAlt:"Anteprima della foto selezionata",
-docTitle:"Minha Rua Tem Voz | Forum della comunità",
-loadingReports:"Caricamento delle segnalazioni...",
-loadingErrorHint:"Controlla la connessione e riprova.",
-setupTitle:"Collega Supabase",
-setupText:"Aggiungi l'URL e la chiave pubblica all'inizio del JavaScript per caricare e pubblicare segnalazioni.",
-setupMode:"Modalità di configurazione",
-streetPlaceholder:"Nome della via",
-neighborhoodPlaceholder:"Nome del quartiere",
-cityPlaceholder:"La tua città",
-statePlaceholder:"Es.: PR"
-},
-zh:{
-home:"首页",report:"报告问题",community:"社区",language:"语言",
-heroTag:"你的社区，你的声音",heroTitle:"更美好的城市始于你的声音。",
-heroText:"报告社区问题，支持其他居民，共同推动社区改善。",
-heroButton:"📢 报告问题",statReports:"已发布报告",statSupport:"社区支持",
-formHeading:"告诉我们发生了什么",formSubheading:"填写以下信息。操作简单，只需几分钟。",
-formTitle:"报告问题",formDescription:"描述情况，让社区中的其他人了解并支持。",
-titleLabel:"问题标题",titlePlaceholder:"例如：主街上有一个大坑",categoryLabel:"类别",
-chooseCategory:"选择类别",catRoad:"道路和坑洞",catLight:"公共照明",catTrash:"垃圾和清洁",
-catSewage:"供水和卫生",catTransport:"公共交通",catSafety:"安全和标志",catAccess:"无障碍设施",catOther:"其他",
-cepLabel:"邮政编码 CEP（可选）",searchCep:"搜索",cepHint:"不知道邮政编码也没关系，可以手动填写地址。",
-streetLabel:"街道",neighborhoodLabel:"社区",cityLabel:"城市",stateLabel:"州或省",
-addressNote:"📍 发布不需要地图。填写文字地址即可。你也可以选择在地图上标记位置。",
-mapButton:"🗺️ 显示地图（可选）",mapHide:"隐藏地图",mapHint:"点击地图标记问题的大致位置。此操作不是必需的。",
-descriptionLabel:"描述",descriptionPlaceholder:"说明发生了什么、问题在哪里以及持续了多久……",
-photoLabel:"照片（可选）",photoTitle:"添加照片",photoHint:"JPG、PNG 或 WEBP，最大 50 MB。",
-privacyNote:"请勿填写密码、证件、电话号码或个人信息。避免拍摄人脸和车牌。",
-submitButton:"📢 发布报告",feedHeading:"你的社区发生了什么？",
-feedSubheading:"查看已报告的问题，并支持需要关注的事项。",
-searchPlaceholder:"按街道或问题搜索……",allCategories:"所有类别",loading:"正在加载……",
-noReports:"没有找到报告",noReportsText:"已发布的报告会显示在这里。",
-footerText:"积极参与的社区始于信息与合作。",pending:"待处理",progress:"处理中",
-resolved:"已解决",support:"支持",supported:"已支持",comments:"评论",writeComment:"写评论……",
-sendComment:"发送",noComments:"暂无评论。",anonymous:"居民",loadingError:"无法加载报告。",
-cepInvalid:"请输入有效的 8 位邮政编码。",cepNotFound:"未找到邮政编码。请检查或手动填写地址。",
-cepError:"无法查询邮政编码。请重试或手动填写地址。",photoTooLarge:"图片不能超过 50 MB。",
-photoInvalid:"请选择 JPG、PNG 或 WEBP 图片。",fillRequired:"请填写所有必填项。",
-published:"报告发布成功！",publishError:"无法发布，请检查网络连接。",
-commentError:"无法发送评论。",commentSent:"评论已发送！",supportError:"无法记录支持。",
-alreadySupported:"你已在此浏览器中支持过该报告。",mapUnavailable:"地图暂不可用。你仍然可以不使用地图发布。",
-photoUploadError:"无法上传照片。",dateUnknown:"日期未知",
-addressFilled:"地址已填写，请检查各项内容！",
-sending:"正在发送……",
-addressUnknown:"未填写地址",
-reportsFound:"找到的报告：{n}",
-openMenu:"打开菜单",
-searchAria:"搜索报告",
-filterAria:"按类别筛选",
-photoAlt:"问题照片",
-previewAlt:"所选照片预览",
-docTitle:"Minha Rua Tem Voz | 社区论坛",
-loadingReports:"正在加载报告……",
-loadingErrorHint:"请检查网络连接后重试。",
-setupTitle:"连接 Supabase",
-setupText:"在 JavaScript 开头添加 URL 和公开密钥，即可加载和发布报告。",
-setupMode:"配置模式",
-streetPlaceholder:"街道名称",
-neighborhoodPlaceholder:"社区名称",
-cityPlaceholder:"你的城市",
-statePlaceholder:"例如：PR"
-},
-ja:{
-home:"ホーム",report:"問題を報告",community:"コミュニティ",language:"言語",
-heroTag:"あなたの地域、あなたの声",heroTitle:"より良い街は、あなたの声から始まります。",
-heroText:"地域の問題を報告し、ほかの人を応援して、地域の改善につなげましょう。",
-heroButton:"📢 問題を報告",statReports:"公開された報告",statSupport:"コミュニティの応援",
-formHeading:"何が起きているか教えてください",formSubheading:"以下の情報を入力してください。簡単で数分で終わります。",
-formTitle:"問題を報告",formDescription:"状況を説明して、地域の人々に知ってもらいましょう。",
-titleLabel:"問題のタイトル",titlePlaceholder:"例：メインストリートの大きな穴",
-categoryLabel:"カテゴリー",chooseCategory:"カテゴリーを選択",catRoad:"道路・舗装",
-catLight:"街灯",catTrash:"ごみ・清掃",catSewage:"水道・衛生",catTransport:"公共交通",
-catSafety:"安全・標識",catAccess:"バリアフリー",catOther:"その他",
-cepLabel:"郵便番号 CEP（任意）",searchCep:"検索",cepHint:"郵便番号が分からない場合は住所を手入力できます。",
-streetLabel:"通り・道路",neighborhoodLabel:"地区",cityLabel:"市区町村",stateLabel:"州",
-addressNote:"📍 投稿に地図は必要ありません。住所の入力だけで十分です。必要なら地図に場所を記せます。",
-mapButton:"🗺️ 地図を表示（任意）",mapHide:"地図を隠す",mapHint:"地図をタップしておおよその場所を指定できます。任意です。",
-descriptionLabel:"説明",descriptionPlaceholder:"何が起きたか、問題の場所、いつから続いているかを説明してください……",
-photoLabel:"写真（任意）",photoTitle:"写真を追加",photoHint:"JPG、PNG、WEBP。最大50 MB。",
-privacyNote:"パスワード、書類、電話番号、個人情報を入力しないでください。顔や車のナンバーの撮影は避けてください。",
-submitButton:"📢 報告を投稿",feedHeading:"地域で何が起きていますか？",
-feedSubheading:"報告された問題を確認し、支援が必要なものを応援しましょう。",
-searchPlaceholder:"通りや問題を検索……",allCategories:"すべてのカテゴリー",loading:"読み込み中……",
-noReports:"報告が見つかりません",noReportsText:"投稿された報告がここに表示されます。",
-footerText:"参加型の地域社会は情報と協力から始まります。",
-pending:"未対応",progress:"対応中",resolved:"解決済み",support:"応援する",supported:"応援済み",
-comments:"コメント",writeComment:"コメントを書く……",sendComment:"送信",noComments:"まだコメントはありません。",
-anonymous:"住民",loadingError:"報告を読み込めませんでした。",cepInvalid:"8桁の郵便番号を入力してください。",
-cepNotFound:"郵便番号が見つかりません。確認するか住所を手入力してください。",
-cepError:"郵便番号を検索できませんでした。もう一度試すか、住所を手入力してください。",photoTooLarge:"画像は50 MB以下にしてください。",
-photoInvalid:"JPG、PNG、WEBP画像を選択してください。",fillRequired:"必須項目をすべて入力してください。",
-published:"報告を投稿しました！",publishError:"投稿できませんでした。接続を確認してください。",
-commentError:"コメントを送信できませんでした。",commentSent:"コメントを送信しました！",
-supportError:"応援を登録できませんでした。",alreadySupported:"このブラウザーでは既に応援しています。",
-mapUnavailable:"地図を利用できません。地図なしで投稿できます。",photoUploadError:"写真をアップロードできませんでした。",dateUnknown:"日付不明",
-addressFilled:"住所を入力しました。内容を確認してください！",
-sending:"送信中……",
-addressUnknown:"住所未入力",
-reportsFound:"見つかった報告：{n}件",
-openMenu:"メニューを開く",
-searchAria:"報告を検索",
-filterAria:"カテゴリーで絞り込む",
-photoAlt:"問題の写真",
-previewAlt:"選択した写真のプレビュー",
-docTitle:"Minha Rua Tem Voz | コミュニティフォーラム",
-loadingReports:"報告を読み込み中……",
-loadingErrorHint:"接続を確認して、もう一度お試しください。",
-setupTitle:"Supabase に接続",
-setupText:"報告を読み込んで投稿するには、JavaScript の先頭に URL と公開キーを追加してください。",
-setupMode:"設定モード",
-streetPlaceholder:"通りの名前",
-neighborhoodPlaceholder:"地区の名前",
-cityPlaceholder:"市区町村",
-statePlaceholder:"例：PR"
-},
-hi:{
-home:"होम",report:"समस्या दर्ज करें",community:"समुदाय",language:"भाषा",
-heroTag:"आपका समुदाय, आपकी आवाज़",heroTitle:"बेहतर शहर की शुरुआत आपकी आवाज़ से होती है।",
-heroText:"अपने इलाके की समस्याएँ दर्ज करें और समुदाय में सुधार के लिए दूसरों का समर्थन करें।",
-heroButton:"📢 समस्या दर्ज करें",statReports:"प्रकाशित रिपोर्ट",statSupport:"समुदाय का समर्थन",
-formHeading:"बताइए क्या हो रहा है",formSubheading:"नीचे जानकारी भरें। यह आसान है और इसमें कुछ मिनट लगते हैं।",
-formTitle:"समस्या दर्ज करें",formDescription:"स्थिति बताएँ ताकि समुदाय के दूसरे लोग इसे समझ सकें और समर्थन कर सकें।",
-titleLabel:"समस्या का शीर्षक",titlePlaceholder:"उदाहरण: मुख्य सड़क पर बड़ा गड्ढा",
-categoryLabel:"श्रेणी",chooseCategory:"श्रेणी चुनें",catRoad:"सड़क और गड्ढे",catLight:"सार्वजनिक रोशनी",
-catTrash:"कचरा और सफाई",catSewage:"पानी और स्वच्छता",catTransport:"सार्वजनिक परिवहन",
-catSafety:"सुरक्षा और संकेत",catAccess:"सुगम्यता",catOther:"अन्य",
-cepLabel:"पोस्टल कोड – CEP (वैकल्पिक)",searchCep:"खोजें",cepHint:"पोस्टल कोड नहीं पता तो पता स्वयं लिख सकते हैं।",
-streetLabel:"सड़क",neighborhoodLabel:"इलाका",cityLabel:"शहर",stateLabel:"राज्य",
-addressNote:"📍 रिपोर्ट प्रकाशित करने के लिए नक्शा ज़रूरी नहीं है। लिखा हुआ पता पर्याप्त है। चाहें तो नक्शे पर स्थान चुनें।",
-mapButton:"🗺️ नक्शा दिखाएँ (वैकल्पिक)",mapHide:"नक्शा छिपाएँ",mapHint:"समस्या का अनुमानित स्थान चुनने के लिए नक्शे पर टैप करें।",
-descriptionLabel:"विवरण",descriptionPlaceholder:"बताएँ क्या हुआ, समस्या कहाँ है और कब से है...",
-photoLabel:"फोटो (वैकल्पिक)",photoTitle:"फोटो जोड़ें",photoHint:"JPG, PNG या WEBP। अधिकतम 50 MB।",
-privacyNote:"पासवर्ड, दस्तावेज़, फोन नंबर या निजी जानकारी न लिखें। चेहरों और वाहन नंबर प्लेट की तस्वीर लेने से बचें।",
-submitButton:"📢 रिपोर्ट प्रकाशित करें",feedHeading:"आपके समुदाय में क्या हो रहा है?",
-feedSubheading:"दर्ज समस्याएँ देखें और ज़रूरी मुद्दों का समर्थन करें।",
-searchPlaceholder:"सड़क या समस्या खोजें...",allCategories:"सभी श्रेणियाँ",loading:"लोड हो रहा है...",
-noReports:"कोई रिपोर्ट नहीं मिली",noReportsText:"प्रकाशित रिपोर्ट यहाँ दिखाई देंगी।",
-footerText:"सक्रिय समुदाय की शुरुआत जानकारी और सहयोग से होती है।",
-pending:"लंबित",progress:"काम जारी",resolved:"हल हो गया",support:"समर्थन करें",supported:"समर्थित",
-comments:"टिप्पणियाँ",writeComment:"टिप्पणी लिखें...",sendComment:"भेजें",noComments:"अभी कोई टिप्पणी नहीं।",
-anonymous:"निवासी",loadingError:"रिपोर्ट लोड नहीं हो सकीं।",cepInvalid:"8 अंकों का सही पोस्टल कोड दर्ज करें।",
-cepNotFound:"पोस्टल कोड नहीं मिला। जाँचें या पता स्वयं लिखें।",cepError:"पोस्टल कोड खोजा नहीं जा सका। फिर से कोशिश करें या पता स्वयं लिखें।",
-photoTooLarge:"फोटो अधिकतम 50 MB की होनी चाहिए।",photoInvalid:"JPG, PNG या WEBP चुनें।",
-fillRequired:"सभी ज़रूरी फ़ील्ड भरें।",published:"रिपोर्ट सफलतापूर्वक प्रकाशित हुई!",
-publishError:"प्रकाशित नहीं हो सका। इंटरनेट कनेक्शन जाँचें।",commentError:"टिप्पणी भेजी नहीं जा सकी।",
-commentSent:"टिप्पणी भेज दी गई!",supportError:"समर्थन दर्ज नहीं हो सका।",
-alreadySupported:"आप इस ब्राउज़र में पहले ही समर्थन कर चुके हैं।",
-mapUnavailable:"नक्शा उपलब्ध नहीं है। आप बिना नक्शे के प्रकाशित कर सकते हैं।",
-photoUploadError:"फोटो अपलोड नहीं हो सकी।",dateUnknown:"तारीख उपलब्ध नहीं",
-addressFilled:"पता भर दिया गया है। कृपया जानकारी जाँच लें!",
-sending:"भेजा जा रहा है...",
-addressUnknown:"पता नहीं दिया गया",
-reportsFound:"मिली रिपोर्ट: {n}",
-openMenu:"मेनू खोलें",
-searchAria:"रिपोर्ट खोजें",
-filterAria:"श्रेणी के अनुसार छाँटें",
-photoAlt:"समस्या की फोटो",
-previewAlt:"चुनी गई फोटो का पूर्वावलोकन",
-docTitle:"Minha Rua Tem Voz | सामुदायिक मंच",
-loadingReports:"रिपोर्ट लोड हो रही हैं...",
-loadingErrorHint:"अपना इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें।",
-setupTitle:"Supabase कनेक्ट करें",
-setupText:"रिपोर्ट लोड और प्रकाशित करने के लिए JavaScript की शुरुआत में URL और सार्वजनिक कुंजी जोड़ें।",
-setupMode:"सेटअप मोड",
-streetPlaceholder:"सड़क का नाम",
-neighborhoodPlaceholder:"इलाके का नाम",
-cityPlaceholder:"आपका शहर",
-statePlaceholder:"उदाहरण: PR"
-},
-ar:{
-home:"الرئيسية",report:"الإبلاغ عن مشكلة",community:"المجتمع",language:"اللغة",
-heroTag:"مجتمعك، صوتك",heroTitle:"مدينة أفضل تبدأ بصوتك.",
-heroText:"أبلغ عن مشكلات منطقتك وادعم الآخرين وساهم في تحسين مجتمعك.",
-heroButton:"📢 الإبلاغ عن مشكلة",statReports:"البلاغات المنشورة",statSupport:"دعم المجتمع",
-formHeading:"أخبرنا بما يحدث",formSubheading:"املأ المعلومات أدناه. الأمر بسيط ولا يستغرق سوى دقائق.",
-formTitle:"الإبلاغ عن مشكلة",formDescription:"صف المشكلة حتى يتمكن سكان المنطقة من معرفتها ودعم حلها.",
-titleLabel:"عنوان المشكلة",titlePlaceholder:"مثال: حفرة كبيرة في الشارع الرئيسي",
-categoryLabel:"الفئة",chooseCategory:"اختر فئة",catRoad:"الطرق والحفر",catLight:"إنارة الشوارع",
-catTrash:"النفايات والنظافة",catSewage:"المياه والصرف الصحي",catTransport:"النقل العام",
-catSafety:"السلامة واللافتات",catAccess:"إمكانية الوصول",catOther:"أخرى",
-cepLabel:"الرمز البريدي CEP (اختياري)",searchCep:"بحث",cepHint:"يمكنك كتابة العنوان يدويًا إذا لم تعرف الرمز البريدي.",
-streetLabel:"الشارع",neighborhoodLabel:"الحي",cityLabel:"المدينة",stateLabel:"الولاية",
-addressNote:"📍 لا تحتاج إلى الخريطة للنشر. العنوان المكتوب كافٍ. يمكنك تحديد الموقع على الخريطة اختياريًا.",
-mapButton:"🗺️ عرض الخريطة (اختياري)",mapHide:"إخفاء الخريطة",mapHint:"اضغط على الخريطة لتحديد الموقع التقريبي. هذا اختياري.",
-descriptionLabel:"الوصف",descriptionPlaceholder:"اشرح ما حدث وأين توجد المشكلة ومنذ متى...",
-photoLabel:"صورة (اختياري)",photoTitle:"إضافة صورة",photoHint:"JPG أو PNG أو WEBP. حتى 50 ميغابايت.",
-privacyNote:"لا تكتب كلمات مرور أو مستندات أو أرقام هواتف أو بيانات شخصية. تجنب تصوير الوجوه ولوحات السيارات.",
-submitButton:"📢 نشر البلاغ",feedHeading:"ماذا يحدث في مجتمعك؟",
-feedSubheading:"اطلع على المشكلات المسجلة وادعم ما يحتاج إلى اهتمام.",
-searchPlaceholder:"ابحث عن شارع أو مشكلة...",allCategories:"كل الفئات",loading:"جارٍ التحميل...",
-noReports:"لم يتم العثور على بلاغات",noReportsText:"ستظهر البلاغات المنشورة هنا.",
-footerText:"يبدأ المجتمع النشط بالمعلومات والتعاون.",
-pending:"قيد الانتظار",progress:"قيد المعالجة",resolved:"تم الحل",support:"ادعم",supported:"تم الدعم",
-comments:"التعليقات",writeComment:"اكتب تعليقًا...",sendComment:"إرسال",noComments:"لا توجد تعليقات بعد.",
-anonymous:"مقيم",loadingError:"تعذر تحميل البلاغات.",cepInvalid:"أدخل رمزًا بريديًا صحيحًا من 8 أرقام.",
-cepNotFound:"لم يتم العثور على الرمز البريدي. تحقق منه أو اكتب العنوان يدويًا.",
-cepError:"تعذر البحث عن الرمز البريدي. حاول مرة أخرى أو اكتب العنوان يدويًا.",photoTooLarge:"يجب ألا يتجاوز حجم الصورة 50 ميغابايت.",
-photoInvalid:"اختر صورة JPG أو PNG أو WEBP.",fillRequired:"املأ جميع الحقول المطلوبة.",
-published:"تم نشر البلاغ بنجاح!",publishError:"تعذر النشر. تحقق من الاتصال بالإنترنت.",
-commentError:"تعذر إرسال التعليق.",commentSent:"تم إرسال التعليق!",supportError:"تعذر تسجيل الدعم.",
-alreadySupported:"لقد دعمت هذا البلاغ بالفعل من هذا المتصفح.",
-mapUnavailable:"الخريطة غير متاحة الآن. يمكنك النشر دون استخدامها.",
-photoUploadError:"تعذر تحميل الصورة.",dateUnknown:"التاريخ غير متاح",
-addressFilled:"تم ملء العنوان. يرجى مراجعة الحقول!",
-sending:"جارٍ الإرسال...",
-addressUnknown:"العنوان غير محدد",
-reportsFound:"البلاغات التي تم العثور عليها: {n}",
-openMenu:"فتح القائمة",
-searchAria:"البحث في البلاغات",
-filterAria:"التصفية حسب الفئة",
-photoAlt:"صورة المشكلة",
-previewAlt:"معاينة الصورة المختارة",
-docTitle:"Minha Rua Tem Voz | منتدى المجتمع",
-loadingReports:"جارٍ تحميل البلاغات...",
-loadingErrorHint:"تحقق من اتصالك بالإنترنت وحاول مرة أخرى.",
-setupTitle:"اربط Supabase",
-setupText:"أضف عنوان URL والمفتاح العام في بداية JavaScript لتحميل البلاغات ونشرها.",
-setupMode:"وضع الإعداد",
-streetPlaceholder:"اسم الشارع",
-neighborhoodPlaceholder:"اسم الحي",
-cityPlaceholder:"مدينتك",
-statePlaceholder:"مثال: PR"
+docTitle:"Minha Rua Tem Voz | Campo Largo",language:"Idioma",openMenu:"Abrir menú",
+navHow:"Cómo funciona",navMap:"Mapa",navReports:"Informes",navPanel:"Panel",navBusiness:"Comercio",navCta:"📢 Informar un problema",
+heroPill:"Plataforma comunitaria de Campo Largo",heroTitle1:"Tu calle tiene problemas.",heroTitle2:"Ahora también tiene",heroTitle3:"voz",
+heroLead:"Informa baches, farolas apagadas, basura y falta de accesibilidad en menos de dos minutos. La comunidad apoya y la ciudad ve lo que es prioridad.",
+heroCta1:"📢 Informar un problema",heroCta2:"🗺️ Ver el mapa de la ciudad",
+statReports:"informes",statSupport:"apoyos",statResolved:"resueltos",statHoods:"barrios",
+phoneHello:"Buenos días, Campo Largo 👋",phoneQuestion:"¿Qué pasa en tu calle?",
+mock1:"Gran bache cerca de la escuela",mock2:"Farola apagada desde hace dos semanas",mock3:"Basura acumulada en la plaza",supportsWord:"apoyos",
+badgeResolved:"¡Problema resuelto!",badgeSupport:"+12 vecinos apoyaron",
+pending:"Pendiente",progress:"En curso",resolved:"Resuelto",
+partnersLabel:"Iniciativa presentada a",partnerSchool:"Proyecto escolar",partnerProposed:"Alianza propuesta",
+howEyebrow:"Cómo funciona",howTitle:"Del problema en la acera a la solución, en cuatro pasos",
+howText:"Sin registro, sin aplicación que instalar y sin burocracia. Funciona en cualquier celular.",
+step1Title:"Informa",step1Text:"Toma una foto, elige la categoría y describe el problema en pocas palabras.",
+step2Title:"Ubica",step2Text:"Escribe el código postal: la dirección se completa sola y el punto aparece en el mapa.",
+step3Title:"Moviliza",step3Text:"Los vecinos apoyan y comentan. Cuanto más apoyo, mayor la prioridad.",
+step4Title:"Sigue",step4Text:"Mira cuándo el problema pasa a \"en curso\" y, por fin, a \"resuelto\".",
+mapEyebrow:"Mapa de la ciudad",mapTitle:"Todos los problemas de Campo Largo en un solo lugar",
+mapText:"Cada punto es un informe de la comunidad. Los colores muestran la categoría y ayudan a ver dónde están los problemas.",
+mapSideTitle:"Informes en el mapa",mapSideHint:"Haz clic en un elemento para verlo en el mapa.",
+mapEmpty:"Todavía no hay informes con ubicación en el mapa.",mapUnavailable:"El mapa no está disponible ahora. Puedes publicar sin él.",
+repEyebrow:"Informes de la comunidad",repTitle:"Lo que piden los vecinos",
+repText:"Los informes más apoyados aparecen primero. Apoya los que también te afectan.",
+all:"Todas",searchAria:"Buscar informes",searchPlaceholder:"Buscar por calle, barrio o problema",
+reportsFound:"Informes encontrados: {n}",rank:"#{n} más apoyado",
+supportersZero:"Sé el primero en apoyar este informe",supportersOne:"1 vecino apoya este informe",supportersMany:"{n} vecinos apoyan este informe",
+support:"🧡 Apoyar",supported:"✓ Apoyado",seeOnMap:"Ver en el mapa",noLocation:"Este informe no tiene ubicación en el mapa",
+comments:"Comentarios",writeComment:"Escribe un comentario...",sendComment:"Enviar comentario",noComments:"Todavía no hay comentarios.",
+anonymous:"Vecino",commentSent:"¡Comentario enviado!",commentError:"No se pudo enviar el comentario.",
+noReports:"No se encontraron informes.",noReportsText:"Prueba otra búsqueda o categoría.",
+emptyAll:"Todavía no hay informes.",emptyAllText:"¡Sé el primero en informar un problema de tu calle!",
+loading:"Cargando...",loadingReports:"Cargando informes...",loadingError:"No se pudieron cargar los informes.",
+loadingErrorHint:"Comprueba tu conexión e inténtalo de nuevo.",addressUnknown:"Dirección no informada",photoAlt:"Foto del problema",
+formEyebrow:"Informar un problema",formHeading:"Cuéntanos qué pasa en tu calle",formSubheading:"Lleva menos de dos minutos. Tu informe es anónimo.",
+formTitle:"Nuevo informe",requiredNote:"Campo obligatorio",categoryLabel:"Categoría",
+titleLabel:"Título",titlePlaceholder:"Ej.: Gran bache frente a la escuela",
+cepLabel:"Código postal (CEP)",cepButton:"Buscar dirección",searching:"Buscando...",
+streetLabel:"Calle",streetPlaceholder:"Nombre de la calle",hoodLabel:"Barrio",hoodPlaceholder:"Nombre del barrio",
+cityLabel:"Ciudad",stateLabel:"Estado",descLabel:"Descripción",descPlaceholder:"¿Qué pasó, dónde está exactamente y desde cuándo?",
+photoLabel:"Foto (opcional)",photoTitle:"Toca para añadir una foto",photoHint:"JPG, PNG o WEBP · hasta 50 MB",previewAlt:"Vista previa de la foto seleccionada",
+privacyNote:"🔒 No incluyas nombres, teléfonos ni documentos. Evita fotografiar rostros y matrículas.",
+submitButton:"📢 Publicar informe",sending:"Enviando...",
+mapCardTitle:"📍 Ubicación del problema",mapCardText:"El punto aparece solo al buscar el código postal. Toca el mapa o arrastra el marcador para ajustarlo. Es opcional.",
+tipTitle:"💡 Consejo para un buen informe",tipText:"Un título corto y una foto nítida ayudan a que el informe reciba más apoyos y se resuelva antes.",
+fillRequired:"Completa la categoría, el título, la calle, el barrio, la ciudad, el estado y la descripción.",
+cepInvalid:"Introduce un código postal válido de 8 dígitos.",cepNotFound:"Código postal no encontrado. Revisa los números o escribe la dirección manualmente.",
+cepError:"No se pudo consultar el código postal. Inténtalo de nuevo o escribe la dirección manualmente.",addressFilled:"📍 ¡Dirección encontrada! Revisa los campos.",
+photoInvalid:"Elige una imagen JPG, PNG o WEBP.",photoTooLarge:"La imagen debe tener como máximo 50 MB.",
+photoUploadError:"No se pudo subir la foto. Prueba con otra imagen.",
+published:"✅ ¡Informe publicado correctamente!",publishError:"No se pudo publicar. Comprueba la conexión e inténtalo de nuevo.",
+supportThanks:"🧡 ¡Gracias por tu apoyo!",supportError:"No se pudo registrar tu apoyo.",alreadySupported:"Ya apoyaste este informe en este navegador.",
+panelEyebrow:"Panel de impacto",panelTitle:"Datos para quien decide",
+panelText:"Una visión organizada de las necesidades de la ciudad, pensada para el ayuntamiento, ACICLA y las asociaciones de barrio.",
+barsTitle:"Informes por categoría",barsText:"Qué problemas aparecen más en la ciudad.",
+donutTitle:"Estado de los informes",donutText:"Cuánto ya se ha resuelto.",
+topTitle:"Prioridades de la comunidad",topText:"Los informes con más apoyos.",panelEmpty:"Los datos aparecerán en cuanto haya informes.",
+bizEyebrow:"Para el comercio local",bizTitle:"Una calle cuidada es una calle con más clientes",
+bizText:"Aceras seguras, iluminación y limpieza traen movimiento al comercio. Las empresas que apoyan el proyecto muestran su compromiso con el barrio.",
+biz1Bold:"Sello \"Empresa Amiga del Barrio\"",biz1Text:"para mostrar en el escaparate y en las redes sociales.",
+biz2Bold:"Informes por barrio",biz2Text:"con las principales necesidades de la zona.",
+biz3Bold:"Acciones conjuntas",biz3Text:"con ACICLA y las asociaciones de vecinos.",
+sealSmall:"Sello",sealName:"Empresa Amiga del Barrio",
+footerText:"Una plataforma comunitaria para informar problemas urbanos, movilizar a los vecinos y ayudar a la ciudad a definir prioridades.",
+footerNav:"Navegación",footerCredit:"Creado y desarrollado por",footerOsm:"Mapas © colaboradores de OpenStreetMap",
+catRoad:"Pavimento",catLight:"Iluminación",catTrash:"Basura y limpieza",catSewage:"Saneamiento",
+catTransport:"Transporte",catSafety:"Seguridad",catAccess:"Accesibilidad",catOther:"Otro"
 }
 };
+let currentLanguage = "pt";
+function t(key){ return translations[currentLanguage]?.[key] ?? translations.pt[key] ?? key; }
 
-function t(key){
-  return translations[currentLanguage]?.[key] || translations.pt[key] || key;
+/* =====================================================================
+   CATEGORIAS (o valor salvo no banco continua em português)
+   ===================================================================== */
+const CATS = {
+  "Pavimentação":   {key:"catRoad",      icon:"🕳️", color:"#E0703A", bg:"#FCEBE1"},
+  "Iluminação":     {key:"catLight",     icon:"💡", color:"#D99A2B", bg:"#FBF1DC"},
+  "Lixo e limpeza": {key:"catTrash",     icon:"🗑️", color:"#6B8E23", bg:"#EEF3E0"},
+  "Saneamento":     {key:"catSewage",    icon:"💧", color:"#2B7BB9", bg:"#E2EEF8"},
+  "Transporte":     {key:"catTransport", icon:"🚌", color:"#7B5EA7", bg:"#EEE8F6"},
+  "Segurança":      {key:"catSafety",    icon:"🚸", color:"#D64545", bg:"#FBE5E5"},
+  "Acessibilidade": {key:"catAccess",    icon:"♿", color:"#1F9D6B", bg:"#E3F5EC"},
+  "Outro":          {key:"catOther",     icon:"📌", color:"#64748B", bg:"#EEF1F5"}
+};
+const catInfo = value => CATS[value] || CATS["Outro"];
+const catLabel = value => CATS[value] ? t(CATS[value].key) : (value || t("catOther"));
+
+/* Status: aceita os valores em português ou inglês vindos do banco */
+const STATUS_CLASS = {pendente:"st-pendente", andamento:"st-andamento", resolvido:"st-resolvido"};
+const STATUS_KEY = {pendente:"pending", andamento:"progress", resolvido:"resolved"};
+function statusOf(value){
+  const v = String(value || "").toLowerCase();
+  if(v === "resolvido" || v === "resolved") return "resolvido";
+  if(v === "em andamento" || v === "andamento" || v === "in progress") return "andamento";
+  return "pendente";
 }
-function showToast(message){
-  const toast=$("toast");
-  toast.textContent=message;
-  toast.classList.add("show");
+const statusLabel = s => t(STATUS_KEY[s]) + (s === "resolvido" ? " ✓" : "");
+
+/* =====================================================================
+   ESTADO
+   ===================================================================== */
+let reports = [];
+let feedState = "loading";          // loading | ready | error
+let filterCat = "Todas";
+const pendingSupports = new Set();
+const openComments = new Set();
+let toastTimer = null;
+
+/* =====================================================================
+   UTILITÁRIOS
+   ===================================================================== */
+function toast(message){
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>toast.classList.remove("show"),3500);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3600);
 }
-function escapeHTML(value){
-  return String(value ?? "").replace(/[&<>"']/g,char=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[char]);
+function getSupported(id){ try{ return localStorage.getItem("mrtv-support-" + id) === "1"; }catch{ return false; } }
+function markSupported(id){ try{ localStorage.setItem("mrtv-support-" + id, "1"); }catch{} }
+function safePhoto(url){
+  if(!url) return "";
+  try{ const p = new URL(url); return ["https:","http:"].includes(p.protocol) ? p.href : ""; }catch{ return ""; }
 }
-// As categorias ficam salvas em português no banco; aqui ligamos cada uma à sua tradução.
-const categoryKeys={
-  "Pavimentação":"catRoad","Iluminação":"catLight","Lixo e limpeza":"catTrash","Saneamento":"catSewage",
-  "Transporte":"catTransport","Segurança":"catSafety","Acessibilidade":"catAccess","Outro":"catOther"
-};
-function categoryLabel(value){
-  return categoryKeys[value]?t(categoryKeys[value]):(value||t("catOther"));
-}
-function savedLanguage(){
-  try{
-    const saved=localStorage.getItem("mrtv-language");
-    return translations[saved]?saved:"pt";
-  }catch{return "pt";}
-}
-function setLanguage(language){
-  currentLanguage=translations[language]?language:"pt";
-  try{localStorage.setItem("mrtv-language",currentLanguage);}catch{}
-  document.documentElement.lang={
-    pt:"pt-BR",en:"en",es:"es",fr:"fr",de:"de",it:"it",zh:"zh-CN",
-    ja:"ja",hi:"hi",ar:"ar"
-  }[currentLanguage];
-  document.documentElement.dir=currentLanguage==="ar"?"rtl":"ltr";
-  document.title=t("docTitle");
-  document.querySelectorAll("[data-i18n]").forEach(el=>{
-    el.textContent=t(el.dataset.i18n);
-  });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
-    el.placeholder=t(el.dataset.i18nPlaceholder);
-  });
-  document.querySelectorAll("[data-i18n-aria-label]").forEach(el=>{
-    el.setAttribute("aria-label",t(el.dataset.i18nAriaLabel));
-  });
-  document.querySelectorAll("[data-i18n-alt]").forEach(el=>{
-    el.alt=t(el.dataset.i18nAlt);
-  });
-  // O botão do mapa mostra "Ocultar" se o mapa já estiver aberto.
-  if($("map").style.display==="block")$("mapToggle").textContent=t("mapHide");
-  // Não sobrescreve o texto "Enviando..." durante um envio.
-  if($("submitButton").disabled)$("submitButton").textContent=t("sending");
-  $("language").value=currentLanguage;
-  renderFeed();
-}
-$("language").addEventListener("change",e=>setLanguage(e.target.value));
-
-$("menuToggle").addEventListener("click",()=>{
-  const open=$("navLinks").classList.toggle("open");
-  $("menuToggle").setAttribute("aria-expanded",String(open));
-});
-$("navLinks").querySelectorAll("a").forEach(link=>{
-  link.addEventListener("click",()=>{
-    $("navLinks").classList.remove("open");
-    $("menuToggle").setAttribute("aria-expanded","false");
-  });
-});
-
-$("cep").addEventListener("input",e=>{
-  let value=e.target.value.replace(/\D/g,"").slice(0,8);
-  if(value.length>5)value=value.slice(0,5)+"-"+value.slice(5);
-  e.target.value=value;
-});
-$("searchCep").addEventListener("click",searchCep);
-$("cep").addEventListener("keydown",e=>{
-  if(e.key==="Enter"){e.preventDefault();searchCep();}
-});
-async function searchCep(){
-  const cep=$("cep").value.replace(/\D/g,"");
-  if(cep.length!==8){showToast(t("cepInvalid"));return;}
-  const button=$("searchCep");
-  button.disabled=true;
-  try{
-    const response=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    if(!response.ok)throw new Error("CEP");
-    const data=await response.json();
-    if(data.erro){showToast(t("cepNotFound"));return;}
-    $("street").value=data.logradouro||$("street").value;
-    $("neighborhood").value=data.bairro||$("neighborhood").value;
-    $("city").value=data.localidade||$("city").value;
-    $("state").value=data.uf||$("state").value;
-    showToast(t("addressFilled"));
-    clearTimeout(geocodeTimer);
-    locateAddress(cep);
-  }catch(error){
-    showToast(t("cepError"));
-  }finally{
-    button.disabled=false;
-  }
-}
-
-$("photo").addEventListener("change",()=>{
-  const file=$("photo").files[0];
-  const preview=$("imagePreview");
-  if(!file){preview.style.display="none";preview.src="";return;}
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)){
-    $("photo").value="";
-    preview.style.display="none";
-    showToast(t("photoInvalid"));
-    return;
-  }
-  if(file.size>50*1024*1024){
-    $("photo").value="";
-    preview.style.display="none";
-    showToast(t("photoTooLarge"));
-    return;
-  }
-  preview.src=URL.createObjectURL(file);
-  preview.style.display="block";
-});
-
-function setMarker(lat,lng){
-  selectedLocation={latitude:lat,longitude:lng};
-  if(mapMarker)map.removeLayer(mapMarker);
-  mapMarker=L.marker([lat,lng]).addTo(map);
-}
-function hideMap(){
-  $("map").style.display="none";
-  $("mapHint").hidden=true;
-  $("mapToggle").textContent=t("mapButton");
-  $("mapToggle").setAttribute("aria-expanded","false");
-}
-function showMap(){
-  $("map").style.display="block";
-  $("mapHint").hidden=false;
-  $("mapToggle").textContent=t("mapHide");
-  $("mapToggle").setAttribute("aria-expanded","true");
-  if(!window.L){showToast(t("mapUnavailable"));return false;}
-  if(!map){
-    map=L.map("map").setView([-25.45,-49.53],12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      maxZoom:19,
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-    map.on("click",event=>setMarker(event.latlng.lat,event.latlng.lng));
-  }
-  setTimeout(()=>map.invalidateSize(),150);
-  return true;
-}
-$("mapToggle").addEventListener("click",()=>{
-  if($("map").style.display==="block")hideMap();
-  else showMap();
-});
-
-/* Geocodificação: localiza o endereço no mapa (OpenStreetMap / Nominatim) */
-let geocodeTimer=null;
-let geocodeSeq=0;
-async function nominatim(params){
-  const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({
-    format:"json",limit:"1",countrycodes:"br","accept-language":"pt-BR",...params
-  });
-  const response=await fetch(url);
-  if(!response.ok)return null;
-  const results=await response.json();
-  return results[0]?{lat:Number(results[0].lat),lng:Number(results[0].lon)}:null;
-}
-async function locateAddress(cepDigits){
-  const street=$("street").value.trim();
-  const neighborhood=$("neighborhood").value.trim();
-  const city=$("city").value.trim();
-  const state=$("state").value.trim();
-  if(!city&&!cepDigits)return;
-  const seq=++geocodeSeq;
-  const attempts=[];
-  if(street&&city)attempts.push({params:{street,city,state},zoom:17});
-  if(cepDigits)attempts.push({params:{postalcode:cepDigits.slice(0,5)+"-"+cepDigits.slice(5)},zoom:16});
-  if(neighborhood&&city)attempts.push({params:{q:[neighborhood,city,state].filter(Boolean).join(", ")},zoom:15});
-  if(city)attempts.push({params:{city,state},zoom:13});
-  try{
-    for(const attempt of attempts){
-      const found=await nominatim(attempt.params);
-      if(seq!==geocodeSeq)return; // um pedido mais novo já começou
-      if(found){
-        if(!showMap())return;
-        setMarker(found.lat,found.lng);
-        setTimeout(()=>map.setView([found.lat,found.lng],attempt.zoom),160);
-        return;
-      }
-    }
-  }catch(error){/* sem mapa, o endereço escrito continua valendo */}
-}
-function scheduleLocate(){
-  clearTimeout(geocodeTimer);
-  geocodeTimer=setTimeout(()=>locateAddress(),1000);
-}
-["street","neighborhood","city","state"].forEach(id=>$(id).addEventListener("input",scheduleLocate));
-
-function updateStats(){
-  $("totalReports").textContent=reports.length;
-  $("totalSupport").textContent=reports.reduce((sum,item)=>sum+(Number(item.support_count)||0),0);
-}
-
-function statusInfo(status){
-  const value=String(status||"Pendente").toLowerCase();
-  if(value==="resolvido"||value==="resolved")return {label:t("resolved"),className:"status-resolvido"};
-  if(value==="em andamento"||value==="andamento"||value==="in progress")return {label:t("progress"),className:"status-andamento"};
-  return {label:t("pending"),className:"status-pendente"};
+const locale = () => ({pt:"pt-BR", en:"en", es:"es"})[currentLanguage];
+function timeAgo(dateValue){
+  const date = new Date(dateValue);
+  if(!dateValue || Number.isNaN(date.getTime())) return "";
+  const rtf = new Intl.RelativeTimeFormat(locale(), {numeric:"auto"});
+  const sec = (date.getTime() - Date.now()) / 1000;
+  const abs = Math.abs(sec);
+  if(abs < 3600) return rtf.format(Math.round(sec / 60), "minute");
+  if(abs < 86400) return rtf.format(Math.round(sec / 3600), "hour");
+  if(abs < 86400 * 30) return rtf.format(Math.round(sec / 86400), "day");
+  if(abs < 86400 * 365) return rtf.format(Math.round(sec / (86400 * 30)), "month");
+  return rtf.format(Math.round(sec / (86400 * 365)), "year");
 }
 function formatDate(value){
-  if(!value)return t("dateUnknown");
-  const date=new Date(value);
-  if(Number.isNaN(date.getTime()))return t("dateUnknown");
-  return date.toLocaleDateString(document.documentElement.lang);
+  const date = new Date(value);
+  if(!value || Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString(locale());
 }
-function getSupported(id){
-  try{return localStorage.getItem("mrtv-support-"+id)==="1";}catch{return false;}
+const hasLocation = r => r.latitude !== null && r.longitude !== null && r.latitude !== "" && r.longitude !== ""
+  && r.latitude !== undefined && r.longitude !== undefined
+  && Number.isFinite(Number(r.latitude)) && Number.isFinite(Number(r.longitude));
+const supportsOf = r => Number(r.support_count) || 0;
+const byMostSupported = (a, b) => (supportsOf(b) - supportsOf(a)) || (new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+/* Logos: se o arquivo não carregar, mostra um selo com o nome */
+document.querySelectorAll("img[data-fallback]").forEach(img => {
+  const swap = () => {
+    const box = document.createElement("span");
+    box.className = "logo-fallback " + (img.dataset.fallbackClass || "");
+    box.textContent = img.dataset.fallback;
+    img.replaceWith(box);
+  };
+  if(img.complete && img.naturalWidth === 0) swap();
+  else img.addEventListener("error", swap, {once:true});
+});
+
+/* =====================================================================
+   IDIOMA
+   ===================================================================== */
+function savedLanguage(){
+  try{ const s = localStorage.getItem("mrtv-language"); return translations[s] ? s : "pt"; }catch{ return "pt"; }
 }
-function markSupported(id){
-  try{localStorage.setItem("mrtv-support-"+id,"1");}catch{}
+function setLanguage(language){
+  currentLanguage = translations[language] ? language : "pt";
+  try{ localStorage.setItem("mrtv-language", currentLanguage); }catch{}
+  document.documentElement.lang = locale();
+  document.title = t("docTitle");
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(el => { el.setAttribute("aria-label", t(el.dataset.i18nAriaLabel)); });
+  document.querySelectorAll("[data-i18n-alt]").forEach(el => { el.alt = t(el.dataset.i18nAlt); });
+  document.querySelectorAll("[data-days]").forEach(el => {
+    el.textContent = timeAgo(Date.now() - Number(el.dataset.days) * 86400000);
+  });
+  if($("submitBtn").disabled) $("submitBtn").textContent = t("sending");
+  if($("cepBtn").disabled) $("cepBtn").textContent = t("searching");
+  $("language").value = currentLanguage;
+  renderLegend();
+  renderChips();
+  refreshAll();
 }
-function safePhoto(url){
-  if(!url)return "";
-  try{
-    const parsed=new URL(url);
-    return ["https:","http:"].includes(parsed.protocol)?parsed.href:"";
-  }catch{return "";}
+$("language").addEventListener("change", e => setLanguage(e.target.value));
+
+/* =====================================================================
+   NÚMEROS DO TOPO
+   ===================================================================== */
+function animateNumber(el, to){
+  const from = Number(el.textContent) || 0, start = performance.now(), dur = 900;
+  if(from === to){ el.textContent = to; return; }
+  const step = now => {
+    const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * e);
+    if(p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function updateStats(){
+  animateNumber($("stReports"), reports.length);
+  animateNumber($("stSupport"), reports.reduce((s, r) => s + supportsOf(r), 0));
+  animateNumber($("stResolved"), reports.filter(r => statusOf(r.status) === "resolvido").length);
+  animateNumber($("stHoods"), new Set(reports.map(r => String(r.neighborhood || "").trim().toLowerCase()).filter(Boolean)).size);
 }
 
-function renderFeed(){
-  const grid=$("feedGrid");
-  if(feedState==="loading"){
-    $("feedCount").textContent=t("loadingReports");
-    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loading"))}</strong></div>`;
-    return;
-  }
-  if(feedState==="setup"){
-    $("feedCount").textContent=t("setupMode");
-    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("setupTitle"))}</strong>${escapeHTML(t("setupText"))}</div>`;
-    updateStats();
-    return;
-  }
-  if(feedState==="error"){
-    $("feedCount").textContent="";
-    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loadingError"))}</strong>${escapeHTML(t("loadingErrorHint"))}</div>`;
-    return;
-  }
-  const search=$("searchInput").value.trim().toLocaleLowerCase();
-  const category=$("categoryFilter").value;
-  const filtered=reports.filter(item=>{
-    const text=[item.title,item.description,item.street,item.neighborhood,item.city,item.category,categoryLabel(item.category)]
-      .join(" ").toLocaleLowerCase();
-    return (!search||text.includes(search))&&(!category||item.category===category);
-  }).sort((a,b)=>{
-    const supportDifference=(Number(b.support_count)||0)-(Number(a.support_count)||0);
-    if(supportDifference!==0)return supportDifference;
-    return new Date(b.created_at||0)-new Date(a.created_at||0);
+/* =====================================================================
+   MAPA DA CIDADE
+   ===================================================================== */
+const CENTER = [-25.4565, -49.5280]; // Campo Largo - PR
+let cityMap = null, mapFitted = false;
+const markers = {};
+function tiles(){
+  return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   });
-  $("feedCount").textContent=t("reportsFound").replace("{n}",filtered.length);
-  if(!filtered.length){
-    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("noReports"))}</strong>${escapeHTML(t("noReportsText"))}</div>`;
-    updateStats();
+}
+function pinIcon(category){
+  const c = catInfo(category);
+  return L.divIcon({className:"", iconSize:[34,34], iconAnchor:[17,34], popupAnchor:[0,-30],
+    html:`<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${c.color};display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.25);border:2px solid #fff"><span style="transform:rotate(45deg);font-size:15px">${c.icon}</span></div>`});
+}
+function initCityMap(){
+  if(!window.L) return;
+  cityMap = L.map("cityMap", {scrollWheelZoom:false}).setView(CENTER, 13);
+  tiles().addTo(cityMap);
+}
+function renderLegend(){
+  $("legend").innerHTML = Object.entries(CATS).map(([value, c]) =>
+    `<span><i style="background:${c.color}"></i>${esc(t(c.key))}</span>`).join("");
+}
+function renderMap(){
+  const located = reports.filter(hasLocation).sort(byMostSupported);
+  if(cityMap){
+    Object.keys(markers).forEach(id => { cityMap.removeLayer(markers[id]); delete markers[id]; });
+    located.forEach(r => {
+      const address = [r.street, r.neighborhood].filter(Boolean).join(" · ");
+      markers[r.id] = L.marker([Number(r.latitude), Number(r.longitude)], {icon:pinIcon(r.category)})
+        .addTo(cityMap)
+        .bindPopup(`<b>${esc(r.title)}</b><br><small>📍 ${esc(address || t("addressUnknown"))}</small><br><small>🧡 ${supportsOf(r)} ${esc(t("supportsWord"))} · ${esc(statusLabel(statusOf(r.status)))}</small>`);
+    });
+    if(!mapFitted && feedState === "ready"){
+      mapFitted = true;
+      if(located.length === 1) cityMap.setView([Number(located[0].latitude), Number(located[0].longitude)], 15);
+      else if(located.length > 1) cityMap.fitBounds(L.latLngBounds(located.map(r => [Number(r.latitude), Number(r.longitude)])), {padding:[40,40], maxZoom:15});
+    }
+  }
+  const list = $("mapList");
+  if(!window.L){ list.innerHTML = `<p class="map-note">${esc(t("mapUnavailable"))}</p>`; return; }
+  if(feedState === "loading"){ list.innerHTML = `<p class="map-note">${esc(t("loadingReports"))}</p>`; return; }
+  if(feedState === "error"){ list.innerHTML = `<p class="map-note">${esc(t("loadingError"))}</p>`; return; }
+  if(!located.length){ list.innerHTML = `<p class="map-note">${esc(t("mapEmpty"))}</p>`; return; }
+  list.innerHTML = located.map(r => `
+    <button class="map-item" data-id="${esc(r.id)}">
+      <i style="background:${catInfo(r.category).color}"></i>
+      <span><b>${esc(r.title)}</b><small>${esc(r.neighborhood || catLabel(r.category))} · 🧡 ${supportsOf(r)}</small></span>
+    </button>`).join("");
+}
+function focusReport(id){
+  const r = reports.find(x => String(x.id) === String(id));
+  if(!r || !cityMap || !markers[r.id]) return;
+  document.querySelectorAll(".map-item").forEach(el => el.classList.toggle("active", el.dataset.id === String(id)));
+  cityMap.flyTo([Number(r.latitude), Number(r.longitude)], 16, {duration:.8});
+  markers[r.id].openPopup();
+}
+$("mapList").addEventListener("click", e => {
+  const b = e.target.closest(".map-item");
+  if(b) focusReport(b.dataset.id);
+});
+
+/* =====================================================================
+   RELATOS (cards)
+   ===================================================================== */
+function renderChips(){
+  const cats = ["Todas", ...Object.keys(CATS)];
+  $("chips").innerHTML = cats.map(c => `<button class="chip ${c === filterCat ? "active" : ""}" data-cat="${esc(c)}">${c === "Todas" ? esc(t("all")) : CATS[c].icon + " " + esc(t(CATS[c].key))}</button>`).join("");
+}
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if(!b) return;
+  filterCat = b.dataset.cat;
+  renderChips();
+  renderCards();
+});
+$("search").addEventListener("input", renderCards);
+
+function supportersText(n){
+  if(n === 0) return t("supportersZero");
+  if(n === 1) return t("supportersOne");
+  return t("supportersMany").replace("{n}", n);
+}
+function renderCards(){
+  const grid = $("cards");
+  if(feedState === "loading"){
+    $("feedCount").textContent = t("loadingReports");
+    grid.innerHTML = `<div class="empty"><b>${esc(t("loading"))}</b></div>`;
     return;
   }
-  grid.innerHTML=filtered.map(item=>{
-    const status=statusInfo(item.status);
-    const supported=getSupported(item.id);
-    const photo=safePhoto(item.photo_url);
-    const address=[item.street,item.neighborhood,item.city,item.state].filter(Boolean).join(", ");
+  if(feedState === "error"){
+    $("feedCount").textContent = "";
+    grid.innerHTML = `<div class="empty"><b>${esc(t("loadingError"))}</b><br>${esc(t("loadingErrorHint"))}</div>`;
+    return;
+  }
+  if(!reports.length){
+    $("feedCount").textContent = "";
+    grid.innerHTML = `<div class="empty"><b>${esc(t("emptyAll"))}</b><br>${esc(t("emptyAllText"))}</div>`;
+    return;
+  }
+  const q = $("search").value.trim().toLocaleLowerCase();
+  const max = Math.max(...reports.map(supportsOf), 1);
+  const list = reports
+    .filter(r => filterCat === "Todas" || r.category === filterCat)
+    .filter(r => !q || [r.title, r.description, r.street, r.neighborhood, r.city, r.category, catLabel(r.category)]
+      .join(" ").toLocaleLowerCase().includes(q))
+    .sort(byMostSupported);
+  $("feedCount").textContent = t("reportsFound").replace("{n}", list.length);
+  if(!list.length){
+    grid.innerHTML = `<div class="empty"><b>${esc(t("noReports"))}</b><br>${esc(t("noReportsText"))}</div>`;
+    return;
+  }
+  const showRank = filterCat === "Todas" && !q;
+  grid.innerHTML = list.map((r, i) => {
+    const c = catInfo(r.category), st = statusOf(r.status), n = supportsOf(r);
+    const photo = safePhoto(r.photo_url);
+    const on = getSupported(r.id);
+    const pending = pendingSupports.has(String(r.id));
+    const address = [r.street, r.neighborhood, r.city].filter(Boolean).join(" · ") || t("addressUnknown");
+    const when = timeAgo(r.created_at);
+    const rank = showRank && i < 3 && n > 0 ? `<span class="rank">${esc(t("rank").replace("{n}", i + 1))}</span>` : "";
+    const located = hasLocation(r);
     return `
-      <article class="issue-card" data-id="${escapeHTML(item.id)}">
-        <div class="card-top">
-          <span class="category-label">${escapeHTML(categoryLabel(item.category))}</span>
-          <span class="status ${status.className}">${escapeHTML(status.label)}</span>
-        </div>
-        <h3>${escapeHTML(item.title)}</h3>
-        <p class="issue-address">📍 ${escapeHTML(address||t("addressUnknown"))}</p>
-        <p class="issue-description">${escapeHTML(item.description)}</p>
-        ${photo?`<img class="issue-image" src="${escapeHTML(photo)}" alt="${escapeHTML(t("photoAlt"))}" loading="lazy">`:""}
-        <p class="issue-meta">${escapeHTML(formatDate(item.created_at))}</p>
+    <article class="card">
+      <div class="card-media" style="background:${c.bg}">
+        ${photo ? `<img src="${esc(photo)}" alt="${esc(t("photoAlt"))}" loading="lazy">` : c.icon}${rank}
+      </div>
+      <div class="card-body">
+        <div class="card-meta"><span class="tag">${c.icon} ${esc(catLabel(r.category))}</span><span class="status ${STATUS_CLASS[st]}">${esc(statusLabel(st))}</span></div>
+        <h3>${esc(r.title)}</h3>
+        <p class="addr">📍 ${esc(address)}${when ? " · " + esc(when) : ""}</p>
+        <p class="desc">${esc(r.description)}</p>
+        <div class="progress"><span style="width:${Math.round(n / max * 100)}%"></span></div>
+        <span class="progress-label">${esc(supportersText(n))}</span>
         <div class="card-actions">
-          <button class="support-btn ${supported?"supported":""}" data-action="support" data-id="${escapeHTML(item.id)}" ${supported?"disabled":""}>
-            ${supported?"✓ "+escapeHTML(t("supported")):"♡ "+escapeHTML(t("support"))} (${Number(item.support_count)||0})
-          </button>
-          <button class="comment-toggle" data-action="comments" data-id="${escapeHTML(item.id)}">💬 ${escapeHTML(t("comments"))}</button>
+          <button class="support ${on ? "on" : ""}" data-action="support" data-id="${esc(r.id)}" ${on || pending ? "disabled" : ""}>${esc(on ? t("supported") : t("support"))}</button>
+          <button class="icon-btn" data-action="comments" data-id="${esc(r.id)}" aria-expanded="${openComments.has(String(r.id))}" aria-label="${esc(t("comments"))}" title="${esc(t("comments"))}">💬</button>
+          <button class="icon-btn" data-action="locate" data-id="${esc(r.id)}" ${located ? "" : "disabled"} aria-label="${esc(located ? t("seeOnMap") : t("noLocation"))}" title="${esc(located ? t("seeOnMap") : t("noLocation"))}">🗺️</button>
         </div>
-        <div class="comments-area" id="comments-${escapeHTML(item.id)}">
-          <div class="comments-list" id="comments-list-${escapeHTML(item.id)}"><p>${escapeHTML(t("loading"))}</p></div>
-          <form class="comment-form" data-id="${escapeHTML(item.id)}">
-            <textarea class="form-control" name="comment" maxlength="1000" required placeholder="${escapeHTML(t("writeComment"))}"></textarea>
-            <button class="btn btn-blue" type="submit">${escapeHTML(t("sendComment"))}</button>
+        <div class="comments" id="comments-${esc(r.id)}" ${openComments.has(String(r.id)) ? "" : "hidden"}>
+          <div class="comments-list" id="comments-list-${esc(r.id)}"><p class="comments-empty">${esc(t("loading"))}</p></div>
+          <form class="comment-form" data-id="${esc(r.id)}">
+            <textarea class="input" name="comment" maxlength="1000" required placeholder="${esc(t("writeComment"))}" aria-label="${esc(t("writeComment"))}"></textarea>
+            <button class="btn btn-navy btn-sm" type="submit">${esc(t("sendComment"))}</button>
           </form>
         </div>
-      </article>`;
+      </div>
+    </article>`;
   }).join("");
-  updateStats();
+  openComments.forEach(id => { if($("comments-list-" + id)) loadComments(id); });
 }
-$("searchInput").addEventListener("input",renderFeed);
-$("categoryFilter").addEventListener("change",renderFeed);
 
-async function loadReports(){
-  if(!db){
-    reports=[];
-    feedState="setup";
-    renderFeed();
+$("cards").addEventListener("click", async e => {
+  const button = e.target.closest("button[data-action]");
+  if(!button) return;
+  const id = button.dataset.id;
+  if(button.dataset.action === "support") await supportReport(id, button);
+  if(button.dataset.action === "comments") toggleComments(id, button);
+  if(button.dataset.action === "locate"){
+    $("mapa").scrollIntoView({behavior:"smooth"});
+    setTimeout(() => focusReport(id), 600);
+  }
+});
+
+/* Apoiar: a função no servidor soma 1 apoio de forma segura */
+async function supportReport(id, button){
+  if(!db){ toast(t("supportError")); return; }
+  if(getSupported(id)){ button.disabled = true; toast(t("alreadySupported")); return; }
+  if(pendingSupports.has(String(id))) return;
+  pendingSupports.add(String(id));
+  button.disabled = true;
+  try{
+    const {error} = await db.rpc("support_complaint", {complaint_id:id});
+    if(error) throw error;
+    markSupported(id);
+    const report = reports.find(r => String(r.id) === String(id));
+    if(report) report.support_count = supportsOf(report) + 1;
+    toast(t("supportThanks"));
+  }catch(error){
+    console.error("ERRO AO APOIAR:", error);
+    toast(t("supportError"));
+  }finally{
+    pendingSupports.delete(String(id));
+    refreshAll();
+  }
+}
+
+/* Comentários */
+function toggleComments(id, button){
+  const area = $("comments-" + id);
+  if(!area) return;
+  const opening = area.hidden;
+  area.hidden = !opening;
+  button.setAttribute("aria-expanded", String(opening));
+  if(opening){ openComments.add(String(id)); loadComments(id); }
+  else openComments.delete(String(id));
+}
+async function loadComments(id){
+  const list = $("comments-list-" + id);
+  if(!list) return;
+  if(!db){ list.innerHTML = `<p class="comments-empty">${esc(t("loadingError"))}</p>`; return; }
+  const {data, error} = await db.from("complaint_comments")
+    .select("id,complaint_id,comment,created_at")
+    .eq("complaint_id", id).order("created_at", {ascending:true});
+  const target = $("comments-list-" + id);
+  if(!target) return;
+  if(error){
+    console.error("ERRO AO CARREGAR COMENTÁRIOS:", error);
+    target.innerHTML = `<p class="comments-empty">${esc(t("loadingError"))}</p>`;
     return;
   }
-  const {data,error}=await db.from("complaints").select("*").order("created_at",{ascending:false}).limit(100);
+  if(!data?.length){ target.innerHTML = `<p class="comments-empty">${esc(t("noComments"))}</p>`; return; }
+  target.innerHTML = data.map(c => `
+    <div class="comment"><strong>${esc(t("anonymous"))} · ${esc(formatDate(c.created_at))}</strong>${esc(c.comment)}</div>`).join("");
+}
+$("cards").addEventListener("submit", async e => {
+  const form = e.target.closest(".comment-form");
+  if(!form) return;
+  e.preventDefault();
+  if(!db){ toast(t("commentError")); return; }
+  const field = form.elements.comment;
+  const comment = field.value.trim();
+  if(!comment) return;
+  const button = form.querySelector("button");
+  button.disabled = true;
+  try{
+    const {error} = await db.from("complaint_comments").insert({complaint_id:form.dataset.id, comment});
+    if(error) throw error;
+    field.value = "";
+    toast(t("commentSent"));
+    await loadComments(form.dataset.id);
+  }catch(error){
+    console.error("ERRO AO COMENTAR:", error);
+    toast(t("commentError"));
+  }finally{ button.disabled = false; }
+});
+
+/* =====================================================================
+   PAINEL
+   ===================================================================== */
+function renderDash(){
+  if(feedState !== "ready" || !reports.length){
+    const msg = feedState === "loading" ? t("loadingReports") : feedState === "error" ? t("loadingError") : t("panelEmpty");
+    $("bars").innerHTML = `<p class="panel-empty">${esc(msg)}</p>`;
+    $("topList").innerHTML = `<li style="display:block" class="panel-empty">${esc(msg)}</li>`;
+    $("topList").classList.add("is-empty");
+    $("donut").style.background = "";
+    $("donutPct").textContent = "0%";
+    $("donutLegend").innerHTML = "";
+    return;
+  }
+  const counts = {};
+  reports.forEach(r => { const k = CATS[r.category] ? r.category : "Outro"; counts[k] = (counts[k] || 0) + 1; });
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...rows.map(r => r[1]), 1);
+  $("bars").innerHTML = rows.map(([cat, n]) => `
+    <div class="bar-row"><span>${CATS[cat].icon} ${esc(t(CATS[cat].key))}</span>
+    <div class="bar-track"><span style="width:${n / max * 100}%;background:${CATS[cat].color}"></span></div><b>${n}</b></div>`).join("");
+
+  const st = {pendente:0, andamento:0, resolvido:0};
+  reports.forEach(r => st[statusOf(r.status)]++);
+  const total = reports.length;
+  const colors = {resolvido:"#1F9D6B", andamento:"#21508A", pendente:"#D99A2B"};
+  let acc = 0;
+  const stops = ["resolvido","andamento","pendente"].map(k => {
+    const from = acc / total * 360; acc += st[k];
+    return `${colors[k]} ${from}deg ${acc / total * 360}deg`;
+  });
+  $("donut").style.background = `conic-gradient(${stops.join(",")})`;
+  $("donutPct").textContent = Math.round(st.resolvido / total * 100) + "%";
+  $("donutLegend").innerHTML = ["resolvido","andamento","pendente"].map(k =>
+    `<span><i style="background:${colors[k]}"></i>${esc(t(STATUS_KEY[k]))}<b>${st[k]}</b></span>`).join("");
+
+  $("topList").classList.remove("is-empty");
+  $("topList").innerHTML = [...reports].sort(byMostSupported).slice(0, 5).map(r =>
+    `<li><span><b>${esc(r.title)}</b><small>${esc(r.neighborhood || catLabel(r.category))} · 🧡 ${supportsOf(r)} ${esc(t("supportsWord"))}</small></span></li>`).join("");
+}
+
+function refreshAll(){ renderCards(); renderMap(); renderDash(); updateStats(); }
+
+/* =====================================================================
+   CARREGAR RELATOS DO BANCO
+   ===================================================================== */
+async function loadReports(){
+  if(!db){ feedState = "error"; refreshAll(); return; }
+  const {data, error} = await db.from("complaints").select("*").order("created_at", {ascending:false}).limit(200);
   if(error){
     console.error("ERRO AO CARREGAR RELATOS:", error);
-    feedState="error";
-    renderFeed();
+    feedState = "error";
+    refreshAll();
     return;
   }
-  reports=data||[];
-  feedState="ready";
-  renderFeed();
+  reports = data || [];
+  feedState = "ready";
+  refreshAll();
 }
 
-async function uploadPhoto(file){
-  if(!file)return null;
-  if(!db)throw new Error("Supabase não configurado");
+/* =====================================================================
+   FORMULÁRIO
+   ===================================================================== */
+$("catGrid").innerHTML = Object.entries(CATS).map(([value, c]) =>
+  `<label class="cat-opt"><input type="radio" name="cat" value="${esc(value)}"><span><i>${c.icon}</i><span data-i18n="${c.key}">${esc(t(c.key))}</span></span></label>`).join("");
 
-  const extension=file.type==="image/png"?"png":file.type==="image/webp"?"webp":"jpg";
-  const path=`${crypto.randomUUID()}.${extension}`;
+let formMap = null, formMarker = null, selectedLocation = null;
+function initFormMap(){
+  if(!window.L) return;
+  formMap = L.map("formMap").setView(CENTER, 13);
+  tiles().addTo(formMap);
+  formMap.on("click", e => setPoint(e.latlng.lat, e.latlng.lng));
+}
+function setPoint(lat, lng, zoom){
+  selectedLocation = {latitude:lat, longitude:lng};
+  if(!formMap) return;
+  if(formMarker) formMarker.setLatLng([lat, lng]);
+  else formMarker = L.marker([lat, lng], {draggable:true}).addTo(formMap)
+    .on("dragend", e => { const p = e.target.getLatLng(); selectedLocation = {latitude:p.lat, longitude:p.lng}; });
+  if(zoom) formMap.flyTo([lat, lng], zoom, {duration:.8});
+}
+function clearPoint(){
+  selectedLocation = null;
+  if(formMarker && formMap){ formMap.removeLayer(formMarker); formMarker = null; }
+  if(formMap) formMap.setView(CENTER, 13);
+}
 
-  const {error}=await db.storage.from("complaints-photos").upload(path,file,{
-    contentType:file.type,
-    upsert:false
-    
+/* CEP */
+$("fCep").addEventListener("input", e => {
+  let v = e.target.value.replace(/\D/g, "").slice(0, 8);
+  if(v.length > 5) v = v.slice(0, 5) + "-" + v.slice(5);
+  e.target.value = v;
+});
+$("fCep").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); searchCep(); } });
+$("cepBtn").addEventListener("click", searchCep);
+async function searchCep(){
+  const cep = $("fCep").value.replace(/\D/g, "");
+  if(cep.length !== 8){ toast(t("cepInvalid")); return; }
+  const btn = $("cepBtn");
+  btn.disabled = true; btn.textContent = t("searching");
+  try{
+    const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if(!res.ok) throw new Error("CEP");
+    const d = await res.json();
+    if(d.erro){ toast(t("cepNotFound")); return; }
+    if(d.logradouro) $("fStreet").value = d.logradouro;
+    if(d.bairro) $("fHood").value = d.bairro;
+    if(d.localidade) $("fCity").value = d.localidade;
+    if(d.uf) $("fState").value = d.uf;
+    toast(t("addressFilled"));
+    clearTimeout(geoTimer);
+    locateAddress(cep);
+  }catch(error){
+    toast(t("cepError"));
+  }finally{
+    btn.disabled = false; btn.textContent = t("cepButton");
+  }
+}
+
+/* Localiza o endereço no mapa (OpenStreetMap / Nominatim) */
+let geoTimer = null, geoSeq = 0;
+async function geocode(params){
+  const url = "https://nominatim.openstreetmap.org/search?" + new URLSearchParams({
+    format:"json", limit:"1", countrycodes:"br", "accept-language":"pt-BR", ...params
   });
+  const r = await fetch(url);
+  if(!r.ok) return null;
+  const j = await r.json();
+  return j[0] ? {lat:Number(j[0].lat), lng:Number(j[0].lon)} : null;
+}
+async function locateAddress(cep){
+  const street = $("fStreet").value.trim(), hood = $("fHood").value.trim();
+  const city = $("fCity").value.trim(), state = $("fState").value.trim();
+  if(!city && !cep) return;
+  const seq = ++geoSeq, tries = [];
+  if(street && city) tries.push([{street, city, state}, 17]);
+  if(cep) tries.push([{postalcode:cep.slice(0, 5) + "-" + cep.slice(5)}, 16]);
+  if(hood && city) tries.push([{q:[hood, city, state].filter(Boolean).join(", ")}, 15]);
+  if(city) tries.push([{city, state}, 13]);
+  try{
+    for(const [params, zoom] of tries){
+      const found = await geocode(params);
+      if(seq !== geoSeq) return; // um pedido mais novo já começou
+      if(found){ setPoint(found.lat, found.lng, zoom); return; }
+    }
+  }catch(error){ /* sem mapa, o endereço escrito continua valendo */ }
+}
+["fStreet", "fHood", "fCity", "fState"].forEach(id => $(id).addEventListener("input", () => {
+  clearTimeout(geoTimer);
+  geoTimer = setTimeout(() => locateAddress(), 1000);
+}));
 
-  if(error)throw error;
-
-  const {data}=db.storage.from("complaints-photos").getPublicUrl(path);
+/* Foto */
+let previewUrl = null;
+function clearPhoto(){
+  $("fPhoto").value = "";
+  if(previewUrl){ URL.revokeObjectURL(previewUrl); previewUrl = null; }
+  $("fPreview").hidden = true;
+  $("fPreview").removeAttribute("src");
+}
+$("fPhoto").addEventListener("change", () => {
+  const file = $("fPhoto").files[0];
+  if(!file){ clearPhoto(); return; }
+  if(!["image/jpeg", "image/png", "image/webp"].includes(file.type)){ clearPhoto(); toast(t("photoInvalid")); return; }
+  if(file.size > 50 * 1024 * 1024){ clearPhoto(); toast(t("photoTooLarge")); return; }
+  if(previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = URL.createObjectURL(file);
+  $("fPreview").src = previewUrl;
+  $("fPreview").hidden = false;
+});
+async function uploadPhoto(file){
+  const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${crypto.randomUUID()}.${extension}`;
+  const {error} = await db.storage.from("complaints-photos").upload(path, file, {contentType:file.type, upsert:false});
+  if(error) throw error;
+  const {data} = db.storage.from("complaints-photos").getPublicUrl(path);
   return data.publicUrl;
 }
 
-$("reportForm").addEventListener("submit",async event=>{
-  event.preventDefault();
-  const form=event.currentTarget;
-
-  if(!db){
-    showToast(t("setupTitle"));
+/* Publicar */
+$("reportForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if(!db){ toast(t("publishError")); return; }
+  const category = document.querySelector('input[name="cat"]:checked')?.value || "";
+  const record = {
+    title:$("fTitle").value.trim(),
+    category,
+    description:$("fDesc").value.trim(),
+    cep:$("fCep").value.replace(/\D/g, ""),
+    street:$("fStreet").value.trim(),
+    neighborhood:$("fHood").value.trim(),
+    city:$("fCity").value.trim(),
+    state:$("fState").value.trim(),
+    latitude:selectedLocation?.latitude ?? null,
+    longitude:selectedLocation?.longitude ?? null,
+    photo_url:null,
+    status:"Pendente",
+    support_count:0
+  };
+  if(!record.category || !record.title || !record.description || !record.street || !record.neighborhood || !record.city || !record.state){
+    toast(t("fillRequired"));
     return;
   }
-  if(!form.reportValidity()){
-    showToast(t("fillRequired"));
-    return;
-  }
+  const file = $("fPhoto").files[0];
+  if(file && file.size > 50 * 1024 * 1024){ toast(t("photoTooLarge")); return; }
 
-  const file=$("photo").files[0];
-  if(file&&file.size>50*1024*1024){
-    showToast(t("photoTooLarge"));
-    return;
-  }
-
-  const button=$("submitButton");
-  button.disabled=true;
-  button.textContent=t("sending");
-
+  const button = $("submitBtn");
+  button.disabled = true;
+  button.textContent = t("sending");
   try{
-    let photoUrl=null;
     if(file){
       try{
-        photoUrl=await uploadPhoto(file);
+        record.photo_url = await uploadPhoto(file);
       }catch(uploadError){
-        console.error("ERRO AO ENVIAR FOTO:",uploadError);
-        showToast(t("photoUploadError"));
+        console.error("ERRO AO ENVIAR FOTO:", uploadError);
+        toast(t("photoUploadError"));
         return;
       }
     }
+    const {error} = await db.from("complaints").insert(record);
+    if(error) throw error;
 
-    const record={
-      title:$("title").value.trim(),
-      category:$("category").value,
-      description:$("description").value.trim(),
-      cep:$("cep").value.replace(/\D/g,""),
-      street:$("street").value.trim(),
-      neighborhood:$("neighborhood").value.trim(),
-      city:$("city").value.trim(),
-      state:$("state").value.trim(),
-      latitude:selectedLocation?.latitude??null,
-      longitude:selectedLocation?.longitude??null,
-      photo_url:photoUrl,
-      status:"Pendente",
-      support_count:0
-    };
-
-    const {error}=await db.from("complaints").insert(record);
-    if(error)throw error;
-
-    form.reset();
-    $("imagePreview").style.display="none";
-    $("imagePreview").src="";
-    selectedLocation=null;
-    clearTimeout(geocodeTimer);
-    geocodeSeq++;
-
-    if(mapMarker){
-      map.removeLayer(mapMarker);
-      mapMarker=null;
-    }
-
-    showToast(t("published"));
+    e.target.reset();
+    $("fCity").value = "Campo Largo";
+    $("fState").value = "PR";
+    clearPhoto();
+    clearTimeout(geoTimer); geoSeq++;
+    clearPoint();
+    filterCat = "Todas"; $("search").value = ""; renderChips();
+    toast(t("published"));
     await loadReports();
-    $("comunidade").scrollIntoView({behavior:"smooth"});
+    $("relatos").scrollIntoView({behavior:"smooth"});
   }catch(error){
-    console.error("ERRO AO PUBLICAR:",error);
-    showToast(t("publishError"));
+    console.error("ERRO AO PUBLICAR:", error);
+    toast(t("publishError"));
   }finally{
-    button.disabled=false;
-    button.textContent=t("submitButton");
+    button.disabled = false;
+    button.textContent = t("submitButton");
   }
 });
 
-$("feedGrid").addEventListener("click",async event=>{
-  const button=event.target.closest("button[data-action]");
-  if(!button)return;
-  const id=button.dataset.id;
-  if(button.dataset.action==="support")await supportReport(id,button);
-  if(button.dataset.action==="comments")await toggleComments(id);
+/* =====================================================================
+   MENU E ANIMAÇÕES
+   ===================================================================== */
+$("menuBtn").addEventListener("click", () => {
+  const open = $("navLinks").classList.toggle("open");
+  $("menuBtn").setAttribute("aria-expanded", String(open));
 });
-
-async function supportReport(id,button){
-  if(!db){showToast(t("supportError"));return;}
-  if(getSupported(id)){
-    button.disabled=true;
-    showToast(t("alreadySupported"));
-    return;
-  }
-  if(pendingSupports.has(String(id)))return;
-
-  // Desativa imediatamente para impedir cliques repetidos enquanto o servidor responde.
-  pendingSupports.add(String(id));
-  button.disabled=true;
-
-  try{
-    const {error}=await db.rpc("support_complaint",{complaint_id:id});
-    if(error)throw error;
-
-    markSupported(id);
-    const report=reports.find(item=>String(item.id)===String(id));
-    if(report)report.support_count=(Number(report.support_count)||0)+1;
-    renderFeed();
-  }catch(error){
-    console.error("ERRO AO APOIAR:",error);
-    showToast(t("supportError"));
-    button.disabled=false;
-  }finally{
-    pendingSupports.delete(String(id));
-  }
-}
-
-async function toggleComments(id){
-  const area=$(`comments-${id}`);
-  const opening=!area.classList.contains("open");
-  area.classList.toggle("open");
-  if(!opening)return;
-  await loadComments(id);
-}
-async function loadComments(id){
-  const list=$(`comments-list-${id}`);
-  if(!db){list.textContent=t("loadingError");return;}
-  const {data,error}=await db.from("complaint_comments")
-    .select("id,complaint_id,comment,created_at")
-    .eq("complaint_id",id).order("created_at",{ascending:true});
-  if(error){
-    console.error(error);
-    list.textContent=t("loadingError");
-    return;
-  }
-  if(!data?.length){list.textContent=t("noComments");return;}
-  list.innerHTML=data.map(comment=>`
-    <div class="comment">
-      <strong>${escapeHTML(t("anonymous"))} · ${escapeHTML(formatDate(comment.created_at))}</strong>
-      ${escapeHTML(comment.comment)}
-    </div>`).join("");
-}
-
-$("feedGrid").addEventListener("submit",async event=>{
-  const form=event.target.closest(".comment-form");
-  if(!form)return;
-  event.preventDefault();
-  if(!db){showToast(t("commentError"));return;}
-  const field=form.elements.comment;
-  const comment=field.value.trim();
-  if(!comment)return;
-  const button=form.querySelector("button");
-  button.disabled=true;
-  try{
-    const {error}=await db.from("complaint_comments").insert({
-      complaint_id:form.dataset.id,
-      comment
-    });
-    if(error)throw error;
-    field.value="";
-    showToast(t("commentSent"));
-    await loadComments(form.dataset.id);
-  }catch(error){
-    console.error(error);
-    showToast(t("commentError"));
-  }finally{button.disabled=false;}
+$("navLinks").addEventListener("click", e => {
+  if(e.target.closest("a")){ $("navLinks").classList.remove("open"); $("menuBtn").setAttribute("aria-expanded", "false"); }
 });
+if("IntersectionObserver" in window){
+  const io = new IntersectionObserver(entries => entries.forEach(en => {
+    if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+  }), {threshold:.12});
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+}else{
+  document.querySelectorAll(".reveal").forEach(el => el.classList.add("in"));
+}
 
+/* =====================================================================
+   INÍCIO
+   ===================================================================== */
+initCityMap();
+initFormMap();
 setLanguage(savedLanguage());
 loadReports();
 </script>
