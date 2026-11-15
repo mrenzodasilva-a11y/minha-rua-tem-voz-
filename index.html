@@ -907,6 +907,8 @@ async function searchCep(){
     $("city").value=data.localidade||$("city").value;
     $("state").value=data.uf||$("state").value;
     showToast("Endereço preenchido. Confira os campos!");
+    clearTimeout(geocodeTimer);
+    locateAddress(cep);
   }catch(error){
     showToast(t("cepError"));
   }finally{
@@ -934,35 +936,81 @@ $("photo").addEventListener("change",()=>{
   preview.style.display="block";
 });
 
-$("mapToggle").addEventListener("click",()=>{
-  const mapElement=$("map");
-  const showing=mapElement.style.display==="block";
-  if(showing){
-    mapElement.style.display="none";
-    $("mapHint").hidden=true;
-    $("mapToggle").textContent=t("mapButton");
-    $("mapToggle").setAttribute("aria-expanded","false");
-    return;
-  }
-  mapElement.style.display="block";
+function setMarker(lat,lng){
+  selectedLocation={latitude:lat,longitude:lng};
+  if(mapMarker)map.removeLayer(mapMarker);
+  mapMarker=L.marker([lat,lng]).addTo(map);
+}
+function hideMap(){
+  $("map").style.display="none";
+  $("mapHint").hidden=true;
+  $("mapToggle").textContent=t("mapButton");
+  $("mapToggle").setAttribute("aria-expanded","false");
+}
+function showMap(){
+  $("map").style.display="block";
   $("mapHint").hidden=false;
   $("mapToggle").textContent=t("mapHide");
   $("mapToggle").setAttribute("aria-expanded","true");
-  if(!window.L){showToast(t("mapUnavailable"));return;}
+  if(!window.L){showToast(t("mapUnavailable"));return false;}
   if(!map){
     map=L.map("map").setView([-25.45,-49.53],12);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19,
       attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-    map.on("click",event=>{
-      selectedLocation={latitude:event.latlng.lat,longitude:event.latlng.lng};
-      if(mapMarker)map.removeLayer(mapMarker);
-      mapMarker=L.marker(event.latlng).addTo(map);
-    });
+    map.on("click",event=>setMarker(event.latlng.lat,event.latlng.lng));
   }
   setTimeout(()=>map.invalidateSize(),150);
+  return true;
+}
+$("mapToggle").addEventListener("click",()=>{
+  if($("map").style.display==="block")hideMap();
+  else showMap();
 });
+
+/* Geocodificação: localiza o endereço no mapa (OpenStreetMap / Nominatim) */
+let geocodeTimer=null;
+let geocodeSeq=0;
+async function nominatim(params){
+  const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({
+    format:"json",limit:"1",countrycodes:"br","accept-language":"pt-BR",...params
+  });
+  const response=await fetch(url);
+  if(!response.ok)return null;
+  const results=await response.json();
+  return results[0]?{lat:Number(results[0].lat),lng:Number(results[0].lon)}:null;
+}
+async function locateAddress(cepDigits){
+  const street=$("street").value.trim();
+  const neighborhood=$("neighborhood").value.trim();
+  const city=$("city").value.trim();
+  const state=$("state").value.trim();
+  if(!city&&!cepDigits)return;
+  const seq=++geocodeSeq;
+  const attempts=[];
+  if(street&&city)attempts.push({params:{street,city,state},zoom:17});
+  if(cepDigits)attempts.push({params:{postalcode:cepDigits.slice(0,5)+"-"+cepDigits.slice(5)},zoom:16});
+  if(neighborhood&&city)attempts.push({params:{q:[neighborhood,city,state].filter(Boolean).join(", ")},zoom:15});
+  if(city)attempts.push({params:{city,state},zoom:13});
+  try{
+    for(const attempt of attempts){
+      const found=await nominatim(attempt.params);
+      if(seq!==geocodeSeq)return; // um pedido mais novo já começou
+      if(found){
+        if(!showMap())return;
+        setMarker(found.lat,found.lng);
+        setTimeout(()=>map.setView([found.lat,found.lng],attempt.zoom),160);
+        return;
+      }
+    }
+  }catch(error){/* sem mapa, o endereço escrito continua valendo */}
+}
+function scheduleLocate(){
+  clearTimeout(geocodeTimer);
+  geocodeTimer=setTimeout(()=>locateAddress(),1000);
+}
+["street","neighborhood","city","state"].forEach(id=>$(id).addEventListener("input",scheduleLocate));
 
 function updateStats(){
   $("totalReports").textContent=reports.length;
@@ -1137,6 +1185,8 @@ $("reportForm").addEventListener("submit",async event=>{
     $("imagePreview").style.display="none";
     $("imagePreview").src="";
     selectedLocation=null;
+    clearTimeout(geocodeTimer);
+    geocodeSeq++;
 
     if(mapMarker){
       map.removeLayer(mapMarker);
