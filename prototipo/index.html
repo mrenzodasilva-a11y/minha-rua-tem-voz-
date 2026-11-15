@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0F2A4A">
+<title>Minha Rua Tem Voz | Campo Largo (protótipo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --navy:#0F2A4A;--navy-2:#173B66;--navy-3:#21508A;
+  --clay:#E0703A;--clay-dark:#C55A27;--clay-soft:#FCEBE1;
+  --green:#1F9D6B;--green-soft:#E3F5EC;
+  --amber:#D99A2B;--amber-soft:#FBF1DC;
+  --ink:#14202E;--muted:#5B6B7C;--line:#E7E2D9;
+  --bg:#F7F5F1;--card:#FFFFFF;
+  --radius:18px;
+  --shadow:0 1px 2px rgba(15,42,74,.06),0 10px 30px rgba(15,42,74,.08);
+  --shadow-lg:0 30px 60px rgba(15,42,74,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{font-family:"Plus Jakarta Sans",system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.container{width:min(1180px,100% - 32px);margin-inline:auto}
+/* Itens de grid podem encolher (evita que textos longos alarguem a página no celular) */
+.hero-grid>*,.form-grid>*,.map-wrap>*,.dash>*,.biz>*,.fields>*{min-width:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- Faixa de protótipo ---------- */
+.proto-bar{background:var(--clay);color:#fff;font-size:.82rem;font-weight:600;text-align:center;padding:7px 16px}
+.proto-bar b{font-weight:800}
+
+/* ---------- Cabeçalho ---------- */
+.header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--navy);letter-spacing:-.3px;line-height:1.1}
+.brand-mark{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--navy),var(--navy-3));color:#fff;font-size:1.25rem;box-shadow:0 6px 16px rgba(15,42,74,.25)}
+.brand small{display:block;font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:0}
+.nav-links{display:flex;gap:28px;list-style:none;font-size:.93rem;font-weight:600;color:var(--muted)}
+.nav-links a:hover{color:var(--navy)}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.menu-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;width:42px;height:42px;font-size:1.2rem;color:var(--navy)}
+
+/* ---------- Botões ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:13px 22px;font-weight:700;font-size:.95rem;transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-clay{background:var(--clay);color:#fff;box-shadow:0 8px 20px rgba(224,112,58,.35)}
+.btn-clay:hover{background:var(--clay-dark)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.btn-ghost:hover{background:rgba(255,255,255,.2)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy-2)}
+.btn-sm{padding:9px 16px;font-size:.88rem;border-radius:10px}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;overflow:hidden;color:#fff;background:
+  radial-gradient(900px 500px at 85% -10%,rgba(224,112,58,.35),transparent 60%),
+  radial-gradient(700px 500px at -10% 110%,rgba(33,80,138,.9),transparent 60%),
+  linear-gradient(160deg,var(--navy) 0%,#0B2140 100%)}
+.hero:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:linear-gradient(180deg,#000 30%,transparent 95%);mask-image:linear-gradient(180deg,#000 30%,transparent 95%)}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:84px 0 96px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);font-size:.82rem;font-weight:600}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 4px rgba(74,222,128,.2)}
+.hero h1{font-size:clamp(2.2rem,5vw,3.7rem);line-height:1.05;letter-spacing:-1.5px;font-weight:800;margin:20px 0 18px}
+.hero h1 em{font-style:normal;color:#FFB48A}
+.hero p.lead{font-size:1.12rem;color:#C9D6E6;max-width:540px}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:44px;max-width:560px}
+.hero-stat{padding:14px;border-radius:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.hero-stat strong{display:block;font-size:1.55rem;font-weight:800;line-height:1.1}
+.hero-stat span{font-size:.76rem;color:#AFC1D6}
+
+/* Celular de demonstração */
+.phone-area{position:relative}
+.phone{position:relative;width:min(330px,100%);margin-inline:auto;border-radius:38px;padding:12px;background:#0A1A2E;box-shadow:var(--shadow-lg),inset 0 0 0 2px rgba(255,255,255,.08);transform:rotate(2deg)}
+.phone-screen{border-radius:28px;background:var(--bg);color:var(--ink);overflow:hidden}
+.phone-top{background:var(--navy);color:#fff;padding:16px 18px 18px;font-size:.8rem}
+.phone-top b{display:block;font-size:1rem}
+.phone-body{padding:14px;display:grid;gap:10px}
+.mini-card{background:#fff;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(15,42,74,.07);font-size:.78rem}
+.mini-card h4{font-size:.86rem;margin:6px 0 4px;line-height:1.3}
+.mini-card .where{color:var(--muted)}
+.mini-card .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;color:var(--muted)}
+.float-badge{position:absolute;display:flex;align-items:center;gap:8px;background:#fff;color:var(--ink);padding:10px 14px;border-radius:14px;box-shadow:var(--shadow-lg);font-size:.8rem;font-weight:700;transform:rotate(-2deg)}
+.float-badge.one{left:-20px;top:-22px}
+.float-badge.two{right:-30px;bottom:70px}
+.float-badge i{font-style:normal;font-size:1.1rem}
+
+/* ---------- Parceiros ---------- */
+.partners{background:#fff;border-bottom:1px solid var(--line)}
+.partners-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0;flex-wrap:wrap}
+.partners-label{font-size:.78rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.partners-logos{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.partner{display:flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;min-height:72px}
+.partner img{height:52px;width:auto;max-width:170px;object-fit:contain}
+.partner .role{font-size:.72rem;color:var(--muted);font-weight:600;line-height:1.3}
+.partner .role b{display:block;color:var(--ink);font-size:.86rem}
+.logo-fallback{display:grid;place-items:center;height:52px;min-width:52px;padding:0 12px;border-radius:10px;font-weight:800;font-size:.8rem;letter-spacing:.5px;color:#fff;background:var(--navy);text-align:center;line-height:1.1}
+.logo-fallback.city{background:var(--green)}
+
+/* ---------- Seções ---------- */
+.section{padding:96px 0}
+.section.alt{background:#fff}
+.eyebrow{display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--clay);margin-bottom:12px}
+.section-head{max-width:680px;margin-bottom:46px}
+.section-head.center{margin-inline:auto;text-align:center}
+.section-head h2{font-size:clamp(1.8rem,3.6vw,2.6rem);line-height:1.12;letter-spacing:-1px;color:var(--navy);font-weight:800}
+.section-head p{color:var(--muted);font-size:1.05rem;margin-top:14px}
+
+/* Como funciona */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:step}
+.step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;transition:transform .2s,box-shadow .2s}
+.step:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.step .ico{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--clay-soft);margin-bottom:18px}
+.step:nth-child(2) .ico{background:#E4EDF8}
+.step:nth-child(3) .ico{background:var(--green-soft)}
+.step:nth-child(4) .ico{background:var(--amber-soft)}
+.step:before{counter-increment:step;content:"0" counter(step);position:absolute;top:22px;right:22px;font-weight:800;color:#D9D3C7;font-size:1.3rem}
+.step h3{font-size:1.08rem;color:var(--navy);margin-bottom:6px}
+.step p{font-size:.92rem;color:var(--muted)}
+
+/* Mapa da cidade */
+.map-wrap{display:grid;grid-template-columns:1fr 340px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+#cityMap{height:520px;z-index:1}
+.map-side{border-left:1px solid var(--line);display:flex;flex-direction:column;max-height:520px}
+.map-side-head{padding:18px 20px;border-bottom:1px solid var(--line)}
+.map-side-head h3{font-size:1rem;color:var(--navy)}
+.map-side-head p{font-size:.82rem;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);font-weight:600}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.map-list{overflow:auto;padding:8px}
+.map-item{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:12px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.map-item:hover,.map-item.active{background:var(--bg)}
+.map-item i{width:12px;height:12px;border-radius:50%;margin-top:6px;flex:none}
+.map-item b{display:block;font-size:.88rem;line-height:1.3}
+.map-item small{color:var(--muted);font-size:.76rem}
+
+/* Relatos */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-size:.84rem;font-weight:600;color:var(--muted);transition:.15s}
+.chip:hover{border-color:var(--navy-3);color:var(--navy)}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.search{position:relative}
+.search input{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px 11px 40px;width:280px;max-width:100%}
+.search:before{content:"🔎";position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:.9rem;opacity:.6}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card-media{height:150px;display:grid;place-items:center;font-size:3rem;position:relative;overflow:hidden}
+.card-media img{width:100%;height:100%;object-fit:cover}
+.card-media .rank{position:absolute;top:12px;left:12px;background:rgba(15,42,74,.85);color:#fff;font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px}
+.card-body{padding:18px 18px 16px;display:flex;flex-direction:column;flex:1}
+.card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.tag{font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--bg);color:var(--muted)}
+.status{font-size:.72rem;font-weight:700;padding:5px 10px;border-radius:999px;display:inline-block}
+.st-pendente{background:var(--amber-soft);color:#9A6A12}
+.st-andamento{background:#E4EDF8;color:var(--navy-3)}
+.st-resolvido{background:var(--green-soft);color:#13704B}
+.card h3{font-size:1.04rem;line-height:1.3;color:var(--ink);margin-bottom:6px}
+.card .addr{font-size:.82rem;color:var(--muted);margin-bottom:10px}
+.card .desc{font-size:.9rem;color:#3E4C5B;flex:1}
+.progress{height:6px;border-radius:99px;background:var(--bg);margin:16px 0 6px;overflow:hidden}
+.progress span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--clay),#F2A170)}
+.progress-label{font-size:.74rem;color:var(--muted)}
+.card-actions{display:flex;gap:8px;margin-top:14px}
+.support{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;font-weight:700;font-size:.88rem;color:var(--navy);transition:.15s}
+.support:hover{border-color:var(--clay);color:var(--clay)}
+.support.on{background:var(--clay);border-color:var(--clay);color:#fff}
+.locate{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:.88rem}
+.locate:hover{border-color:var(--navy-3)}
+.empty{grid-column:1/-1;text-align:center;padding:50px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:var(--radius)}
+
+/* Formulário */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.form-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px;box-shadow:var(--shadow)}
+.form-card h3{font-size:1.25rem;color:var(--navy);margin-bottom:4px}
+.form-card > p{color:var(--muted);font-size:.92rem;margin-bottom:22px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label,.field .label{font-size:.84rem;font-weight:700;color:var(--ink)}
+.req{color:var(--clay)}
+.input{border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;background:#FCFBF9;transition:border .15s,box-shadow .15s;width:100%}
+.input:focus{outline:none;border-color:var(--navy-3);box-shadow:0 0 0 4px rgba(33,80,138,.12);background:#fff}
+textarea.input{min-height:110px;resize:vertical}
+.cep-row{display:flex;gap:8px}
+.cep-row .input{flex:1;min-width:0}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat-opt{position:relative}
+.cat-opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.cat-opt span{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border:1.5px solid var(--line);border-radius:12px;font-size:.74rem;font-weight:700;text-align:center;color:var(--muted);transition:.15s;line-height:1.2}
+.cat-opt span i{font-style:normal;font-size:1.35rem}
+.cat-opt input:checked + span{border-color:var(--clay);background:var(--clay-soft);color:var(--clay-dark)}
+.cat-opt input:focus-visible + span{box-shadow:0 0 0 4px rgba(224,112,58,.2)}
+.upload{border:1.5px dashed #CFC7B8;border-radius:12px;padding:18px;text-align:center;font-size:.86rem;color:var(--muted);position:relative;background:#FCFBF9}
+.upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload img{max-height:160px;margin:10px auto 0;border-radius:10px}
+.privacy{font-size:.78rem;color:var(--muted);background:var(--bg);border-radius:10px;padding:10px 12px;margin:16px 0}
+.side-panel{display:grid;gap:18px;position:sticky;top:100px}
+.form-map-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.form-map-card header{padding:16px 18px;border-bottom:1px solid var(--line)}
+.form-map-card header b{color:var(--navy)}
+.form-map-card header p{font-size:.8rem;color:var(--muted)}
+#formMap{height:300px;z-index:1}
+.tip{background:var(--navy);color:#fff;border-radius:var(--radius);padding:22px}
+.tip b{display:block;margin-bottom:6px}
+.tip p{font-size:.88rem;color:#C9D6E6}
+
+/* Painel */
+.dash{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:20px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.panel h3{font-size:1rem;color:var(--navy);margin-bottom:4px}
+.panel > p{font-size:.82rem;color:var(--muted);margin-bottom:18px}
+.bars{display:grid;gap:12px}
+.bar-row{display:grid;grid-template-columns:140px 1fr 32px;align-items:center;gap:10px;font-size:.84rem}
+.bar-track{height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+.bar-track span{display:block;height:100%;border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar-row b{text-align:right}
+.donut{width:170px;height:170px;border-radius:50%;margin:6px auto 18px;display:grid;place-items:center;position:relative}
+.donut:after{content:"";position:absolute;inset:24px;border-radius:50%;background:#fff}
+.donut div{position:relative;z-index:1;text-align:center}
+.donut strong{font-size:1.8rem;color:var(--navy);display:block;line-height:1}
+.donut small{font-size:.74rem;color:var(--muted)}
+.donut-legend{display:grid;gap:8px;font-size:.84rem}
+.donut-legend span{display:flex;align-items:center;gap:8px}
+.donut-legend i{width:10px;height:10px;border-radius:3px}
+.donut-legend b{margin-left:auto}
+.top-list{display:grid;gap:10px;counter-reset:top}
+.top-list li{list-style:none;display:flex;gap:12px;align-items:center;font-size:.86rem}
+.top-list li:before{counter-increment:top;content:counter(top);width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--clay-soft);color:var(--clay-dark);font-weight:800;flex:none}
+.top-list li b{display:block;line-height:1.3}
+.top-list li small{color:var(--muted)}
+
+/* Comércio */
+.biz{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;border-radius:28px;padding:56px;position:relative;overflow:hidden}
+.biz:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(224,112,58,.45),transparent 70%);right:-120px;top:-160px}
+.biz-text{position:relative;z-index:1}
+.biz h2{font-size:clamp(1.7rem,3.2vw,2.3rem);line-height:1.15;letter-spacing:-.8px;margin-bottom:14px}
+.biz p{color:#C9D6E6}
+.biz ul{list-style:none;display:grid;gap:12px;margin-top:22px}
+.biz li{display:flex;gap:12px;align-items:flex-start;font-size:.95rem}
+.biz li i{font-style:normal;width:28px;height:28px;flex:none;border-radius:8px;background:rgba(255,255,255,.12);display:grid;place-items:center}
+.seal{position:relative;z-index:1;width:260px;height:260px;margin-inline:auto;border-radius:50%;background:#fff;color:var(--navy);display:grid;place-items:center;text-align:center;box-shadow:0 0 0 12px rgba(255,255,255,.1),0 0 0 26px rgba(255,255,255,.05),var(--shadow-lg)}
+.seal div{padding:28px}
+.seal i{font-style:normal;font-size:2.6rem;display:block}
+.seal b{display:block;font-size:1.3rem;line-height:1.15;margin:6px 0}
+.seal small{font-size:.74rem;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* Rodapé */
+.footer{background:#0B2140;color:#AFC1D6;padding:64px 0 28px;margin-top:96px}
+.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+.footer .brand{color:#fff}
+.footer .brand small{color:#7F95AE}
+.footer p{font-size:.9rem;margin-top:14px;max-width:360px}
+.footer h4{color:#fff;font-size:.9rem;margin-bottom:14px}
+.footer ul{list-style:none;display:grid;gap:8px;font-size:.9rem}
+.footer a:hover{color:#fff}
+.footer-logos{display:flex;gap:12px;flex-wrap:wrap}
+.footer-logos .logo-box{background:#fff;border-radius:12px;padding:8px 12px;display:grid;place-items:center;min-height:60px}
+.footer-logos img{height:44px;width:auto;max-width:150px;object-fit:contain}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);margin-top:44px;padding-top:22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.82rem}
+.footer-bottom b{color:#fff}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,160%);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:.9rem;font-weight:600;box-shadow:var(--shadow-lg);z-index:3000;transition:transform .3s cubic-bezier(.2,.8,.2,1);max-width:calc(100% - 32px)}
+.toast.show{transform:translate(-50%,0)}
+
+/* Animação de entrada */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+/* ---------- Responsivo ---------- */
+@media (max-width:1020px){
+  .hero-grid{grid-template-columns:1fr;gap:50px;padding:64px 0 80px}
+  .float-badge.one{left:0}.float-badge.two{right:0}
+  .steps{grid-template-columns:1fr 1fr}
+  .map-wrap{grid-template-columns:1fr}
+  .map-side{border-left:0;border-top:1px solid var(--line);max-height:320px}
+  #cityMap{height:400px}
+  .cards{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .side-panel{position:static}
+  .dash{grid-template-columns:1fr 1fr}
+  .dash .panel:first-child{grid-column:1/-1}
+  .biz{grid-template-columns:1fr;padding:40px}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .footer-grid > div:first-child{grid-column:1/-1}
+}
+@media (max-width:760px){
+  .nav-links{display:none;position:absolute;top:72px;left:0;right:0;flex-direction:column;gap:0;background:#fff;border-bottom:1px solid var(--line);padding:8px 16px}
+  .nav-links.open{display:flex}
+  .nav-links a{display:block;padding:12px 4px}
+  .menu-btn{display:block}
+  .nav-actions .btn{display:none}
+  .section{padding:70px 0}
+  .btn{white-space:normal}
+  .hero-ctas .btn{flex:1 1 100%}
+  .hero h1 br{display:none}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .phone{transform:none}
+  .steps,.cards,.dash{grid-template-columns:1fr}
+  .dash .panel:first-child{grid-column:auto}
+  .fields{grid-template-columns:1fr}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .cep-row{flex-direction:column}
+  .form-card{padding:22px}
+  .search,.search input{width:100%}
+  .bar-row{grid-template-columns:110px 1fr 28px}
+  .biz{padding:30px 22px;border-radius:22px}
+  .seal{width:220px;height:220px}
+  .footer-grid{grid-template-columns:1fr}
+  .partners-inner{justify-content:center;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="proto-bar">🧪 <b>Protótipo</b> · Nova versão do Minha Rua Tem Voz para o Projeto ACICLA · os relatos desta página são exemplos</div>
+
+<header class="header">
+  <div class="container nav">
+    <a href="#inicio" class="brand">
+      <span class="brand-mark">🏘️</span>
+      <span>Minha Rua Tem Voz<small>Campo Largo · PR</small></span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#como-funciona">Como funciona</a></li>
+      <li><a href="#mapa">Mapa</a></li>
+      <li><a href="#relatos">Relatos</a></li>
+      <li><a href="#painel">Painel</a></li>
+      <li><a href="#comercio">Comércio</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#registrar" class="btn btn-clay btn-sm">📢 Registrar problema</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ============ HERO ============ -->
+<section class="hero" id="inicio">
+  <div class="container hero-grid">
+    <div>
+      <span class="pill"><span class="dot"></span> Plataforma comunitária de Campo Largo</span>
+      <h1>Sua rua tem problemas.<br>Agora ela também tem <em>voz</em>.</h1>
+      <p class="lead">Registre buracos, lâmpadas apagadas, lixo e falta de acessibilidade em menos de dois minutos. A comunidade apoia e a cidade enxerga o que é prioridade.</p>
+      <div class="hero-ctas">
+        <a href="#registrar" class="btn btn-clay">📢 Registrar um problema</a>
+        <a href="#mapa" class="btn btn-ghost">🗺️ Ver mapa da cidade</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong id="stReports">0</strong><span>relatos</span></div>
+        <div class="hero-stat"><strong id="stSupport">0</strong><span>apoios</span></div>
+        <div class="hero-stat"><strong id="stResolved">0</strong><span>resolvidos</span></div>
+        <div class="hero-stat"><strong id="stHoods">0</strong><span>bairros</span></div>
+      </div>
+    </div>
+
+    <div class="phone-area">
+      <div class="phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="phone-top">Bom dia, Campo Largo 👋<b>O que acontece na sua rua?</b></div>
+          <div class="phone-body">
+            <div class="mini-card">
+              <span class="status st-andamento">Em andamento</span>
+              <h4>Buraco grande perto da escola</h4>
+              <span class="where">📍 Centro</span>
+              <div class="row"><span>🧡 48 apoios</span><span>há 3 dias</span></div>
+            </div>
+            <div class="mini-card">
+              <span class="status st-pendente">Pendente</span>
+              <h4>Poste apagado há duas semanas</h4>
+              <span class="where">📍 Rondinha</span>
+              <div class="row"><span>🧡 31 apoios</span><span>há 5 dias</span></div>
+            </div>
+            <div class="mini-card">
+              <span class="status st-resolvido">Resolvido ✓</span>
+              <h4>Lixo acumulado na praça</h4>
+              <span class="where">📍 Ferraria</span>
+              <div class="row"><span>🧡 22 apoios</span><span>há 9 dias</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="float-badge one"><i>✅</i> Problema resolvido!</div>
+      <div class="float-badge two"><i>🧡</i> +12 vizinhos apoiaram</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARCEIROS ============
+     As logos ficam em prototipo/assets/:
+       logo-acicla.png      → ACICLA
+       logo-prefeitura.jpg  → Prefeitura de Campo Largo
+     Se o arquivo não existir, aparece um selo com o nome no lugar. -->
+<section class="partners" aria-label="Parceiros">
+  <div class="container partners-inner">
+    <span class="partners-label">Iniciativa apresentada ao</span>
+    <div class="partners-logos">
+      <div class="partner">
+        <img src="assets/logo-acicla.png" alt="Logo da ACICLA" data-fallback="ACICLA">
+        <div class="role">Projeto escolar<b>ACICLA · Campo Largo</b></div>
+      </div>
+      <div class="partner">
+        <img src="assets/logo-prefeitura.jpg" alt="Logo da Prefeitura de Campo Largo" data-fallback="Prefeitura" data-fallback-class="city">
+        <div class="role">Parceria proposta<b>Prefeitura de Campo Largo</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMO FUNCIONA ============ -->
+<section class="section" id="como-funciona">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Como funciona</span>
+      <h2>Do problema na calçada à solução, em quatro passos</h2>
+      <p>Sem cadastro, sem aplicativo para instalar e sem burocracia. Funciona em qualquer celular.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="ico">📸</div><h3>Registre</h3><p>Tire uma foto, escolha a categoria e descreva o problema em poucas palavras.</p></div>
+      <div class="step reveal"><div class="ico">📍</div><h3>Localize</h3><p>Digite o CEP: o endereço se preenche sozinho e o ponto aparece no mapa.</p></div>
+      <div class="step reveal"><div class="ico">🧡</div><h3>Mobilize</h3><p>Vizinhos apoiam e comentam. Quanto mais apoio, maior a prioridade.</p></div>
+      <div class="step reveal"><div class="ico">✅</div><h3>Acompanhe</h3><p>Veja quando o problema passa para "em andamento" e, enfim, "resolvido".</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MAPA ============ -->
+<section class="section alt" id="mapa">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Mapa da cidade</span>
+      <h2>Todos os problemas de Campo Largo em um só lugar</h2>
+      <p>Cada ponto é um relato da comunidade. As cores mostram a categoria e ajudam a enxergar onde estão os problemas.</p>
+    </div>
+    <div class="map-wrap reveal">
+      <div id="cityMap" aria-label="Mapa com os relatos"></div>
+      <aside class="map-side">
+        <div class="map-side-head">
+          <h3>Relatos no mapa</h3>
+          <p>Clique em um item para ver no mapa.</p>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="map-list" id="mapList"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RELATOS ============ -->
+<section class="section" id="relatos">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Relatos da comunidade</span>
+      <h2>O que os moradores estão pedindo</h2>
+      <p>Os relatos mais apoiados aparecem primeiro. Apoie os que também afetam você.</p>
+    </div>
+    <div class="toolbar">
+      <div class="chips" id="chips"></div>
+      <label class="search"><span class="sr-only">Buscar relatos</span><input id="search" placeholder="Buscar por rua, bairro ou problema"></label>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+
+<!-- ============ REGISTRAR ============ -->
+<section class="section alt" id="registrar">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Registrar problema</span>
+      <h2>Conte o que está acontecendo na sua rua</h2>
+      <p>Leva menos de dois minutos. Seu relato é anônimo.</p>
+    </div>
+    <div class="form-grid">
+      <form class="form-card reveal" id="reportForm" novalidate>
+        <h3>Novo relato</h3>
+        <p>Os campos com <span class="req">*</span> são obrigatórios.</p>
+        <div class="fields">
+          <div class="field full" role="radiogroup" aria-labelledby="catLabel">
+            <span class="label" id="catLabel">Categoria <span class="req">*</span></span>
+            <div class="cat-grid" id="catGrid"></div>
+          </div>
+          <div class="field full">
+            <label for="fTitle">Título <span class="req">*</span></label>
+            <input class="input" id="fTitle" maxlength="100" placeholder="Ex.: Buraco grande em frente à escola">
+          </div>
+          <div class="field full">
+            <label for="fCep">CEP</label>
+            <div class="cep-row">
+              <input class="input" id="fCep" inputmode="numeric" maxlength="9" placeholder="00000-000">
+              <button type="button" class="btn btn-navy" id="cepBtn">Buscar CEP</button>
+            </div>
+          </div>
+          <div class="field full">
+            <label for="fStreet">Rua <span class="req">*</span></label>
+            <input class="input" id="fStreet" maxlength="120" placeholder="Nome da rua">
+          </div>
+          <div class="field">
+            <label for="fHood">Bairro <span class="req">*</span></label>
+            <input class="input" id="fHood" maxlength="100" placeholder="Nome do bairro">
+          </div>
+          <div class="field">
+            <label for="fCity">Cidade</label>
+            <input class="input" id="fCity" maxlength="100" value="Campo Largo">
+          </div>
+          <div class="field full">
+            <label for="fDesc">Descrição <span class="req">*</span></label>
+            <textarea class="input" id="fDesc" maxlength="2000" placeholder="O que aconteceu, onde fica exatamente e há quanto tempo?"></textarea>
+          </div>
+          <div class="field full">
+            <span class="label">Foto (opcional)</span>
+            <div class="upload">
+              <input type="file" id="fPhoto" accept="image/jpeg,image/png,image/webp" aria-label="Adicionar foto">
+              📷 <b>Toque para adicionar uma foto</b><br><small>JPG, PNG ou WEBP</small>
+              <img id="fPreview" alt="Prévia da foto" hidden>
+            </div>
+          </div>
+        </div>
+        <p class="privacy">🔒 Não coloque nomes, telefones ou documentos. Evite fotografar rostos e placas de veículos.</p>
+        <button class="btn btn-clay" type="submit" style="width:100%">📢 Publicar relato</button>
+      </form>
+
+      <div class="side-panel">
+        <div class="form-map-card reveal">
+          <header><b>📍 Local do problema</b><p>O ponto aparece sozinho ao buscar o CEP. Toque no mapa ou arraste o pino para ajustar.</p></header>
+          <div id="formMap"></div>
+        </div>
+        <div class="tip reveal">
+          <b>💡 Dica para um bom relato</b>
+          <p>Um título curto e uma foto nítida fazem o relato receber mais apoios e ser resolvido mais rápido.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAINEL ============ -->
+<section class="section" id="painel">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Painel de impacto</span>
+      <h2>Dados para quem decide</h2>
+      <p>Uma visão organizada das demandas da cidade, pensada para a prefeitura, a ACICLA e as associações de bairro.</p>
+    </div>
+    <div class="dash">
+      <div class="panel reveal">
+        <h3>Relatos por categoria</h3>
+        <p>Quais problemas mais aparecem na cidade.</p>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel reveal">
+        <h3>Situação dos relatos</h3>
+        <p>Quanto já foi resolvido.</p>
+        <div class="donut" id="donut"><div><strong id="donutPct">0%</strong><small>resolvidos</small></div></div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+      <div class="panel reveal">
+        <h3>Prioridades da comunidade</h3>
+        <p>Os relatos com mais apoios.</p>
+        <ol class="top-list" id="topList"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMÉRCIO ============ -->
+<section class="section" id="comercio" style="padding-top:0">
+  <div class="container">
+    <div class="biz reveal">
+      <div class="biz-text">
+        <span class="eyebrow" style="color:#FFB48A">Para o comércio local</span>
+        <h2>Rua bem cuidada é rua com mais clientes</h2>
+        <p>Calçadas seguras, iluminação e limpeza trazem movimento para o comércio. Empresas que apoiam o projeto mostram compromisso com o bairro onde estão.</p>
+        <ul>
+          <li><i>🏅</i><span><b>Selo "Empresa Amiga do Bairro"</b> para exibir na vitrine e nas redes sociais.</span></li>
+          <li><i>📊</i><span><b>Relatórios por bairro</b> com as principais demandas da região.</span></li>
+          <li><i>🤝</i><span><b>Ações em conjunto</b> com a ACICLA e as associações de moradores.</span></li>
+        </ul>
+      </div>
+      <div class="seal"><div><i>🏘️</i><small>Selo</small><b>Empresa Amiga do Bairro</b><small>Campo Largo</small></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ============ RODAPÉ ============ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a href="#inicio" class="brand"><span class="brand-mark">🏘️</span><span>Minha Rua Tem Voz<small>Campo Largo · PR</small></span></a>
+        <p>Uma plataforma comunitária para registrar problemas urbanos, mobilizar vizinhos e ajudar a cidade a definir prioridades.</p>
+      </div>
+      <div>
+        <h4>Navegação</h4>
+        <ul>
+          <li><a href="#como-funciona">Como funciona</a></li>
+          <li><a href="#mapa">Mapa da cidade</a></li>
+          <li><a href="#relatos">Relatos</a></li>
+          <li><a href="#registrar">Registrar problema</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Iniciativa apresentada ao</h4>
+        <div class="footer-logos">
+          <div class="logo-box"><img src="assets/logo-acicla.png" alt="Logo da ACICLA" data-fallback="ACICLA"></div>
+          <div class="logo-box"><img src="assets/logo-prefeitura.jpg" alt="Logo da Prefeitura de Campo Largo" data-fallback="Prefeitura" data-fallback-class="city"></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>Criado e desenvolvido por <b>Enzo da Silva</b> · Projeto ACICLA</span>
+      <span>Protótipo · Mapas © colaboradores do OpenStreetMap</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+
+/* ---------- Logos: se o arquivo não existir, mostra um selo com o nome ---------- */
+document.querySelectorAll("img[data-fallback]").forEach(img=>{
+  const swap=()=>{
+    const box=document.createElement("span");
+    box.className="logo-fallback "+(img.dataset.fallbackClass||"");
+    box.textContent=img.dataset.fallback;
+    img.replaceWith(box);
+  };
+  if(img.complete&&img.naturalWidth===0)swap();
+  else img.addEventListener("error",swap,{once:true});
+});
+
+/* ---------- Categorias ---------- */
+const CATS={
+  "Pavimentação":{icon:"🕳️",color:"#E0703A",bg:"#FCEBE1"},
+  "Iluminação":{icon:"💡",color:"#D99A2B",bg:"#FBF1DC"},
+  "Lixo e limpeza":{icon:"🗑️",color:"#6B8E23",bg:"#EEF3E0"},
+  "Saneamento":{icon:"💧",color:"#2B7BB9",bg:"#E2EEF8"},
+  "Transporte":{icon:"🚌",color:"#7B5EA7",bg:"#EEE8F6"},
+  "Segurança":{icon:"🚸",color:"#D64545",bg:"#FBE5E5"},
+  "Acessibilidade":{icon:"♿",color:"#1F9D6B",bg:"#E3F5EC"},
+  "Outro":{icon:"📌",color:"#64748B",bg:"#EEF1F5"}
+};
+const STATUS={pendente:["Pendente","st-pendente"],andamento:["Em andamento","st-andamento"],resolvido:["Resolvido ✓","st-resolvido"]};
+
+/* ---------- Relatos de exemplo (fictícios) ---------- */
+let reports=[
+  {id:1,title:"Buraco grande perto da escola",cat:"Pavimentação",street:"Rua XV de Novembro",hood:"Centro",lat:-25.4590,lng:-49.5275,status:"andamento",support:48,days:3,desc:"Buraco fundo na faixa da direita. Carros desviam para a contramão na hora da saída dos alunos."},
+  {id:2,title:"Poste apagado há duas semanas",cat:"Iluminação",street:"Rua das Flores",hood:"Rondinha",lat:-25.4705,lng:-49.5180,status:"pendente",support:31,days:5,desc:"O trecho fica completamente escuro à noite e os moradores evitam passar a pé."},
+  {id:3,title:"Lixo acumulado na praça",cat:"Lixo e limpeza",street:"Praça do bairro",hood:"Ferraria",lat:-25.4470,lng:-49.5400,status:"resolvido",support:22,days:9,desc:"Sacos de lixo espalhados ao lado do parquinho. Já foi recolhido, obrigado a todos que apoiaram!"},
+  {id:4,title:"Calçada sem rampa de acesso",cat:"Acessibilidade",street:"Avenida principal",hood:"Centro",lat:-25.4555,lng:-49.5235,status:"pendente",support:27,days:6,desc:"Cadeirantes precisam descer para a rua para atravessar. Falta rebaixamento na esquina."},
+  {id:5,title:"Vazamento de água na esquina",cat:"Saneamento",street:"Rua dos Ipês",hood:"Itaqui",lat:-25.4400,lng:-49.5150,status:"andamento",support:19,days:2,desc:"Água limpa escorrendo sem parar há dois dias. Desperdício e risco de abrir buraco."},
+  {id:6,title:"Ponto de ônibus sem cobertura",cat:"Transporte",street:"Rua do Comércio",hood:"Centro",lat:-25.4615,lng:-49.5320,status:"pendente",support:15,days:12,desc:"Idosos e estudantes esperam no sol e na chuva. O ponto tem muito movimento de manhã."},
+  {id:7,title:"Faixa de pedestres apagada",cat:"Segurança",street:"Rua da Escola",hood:"Rondinha",lat:-25.4660,lng:-49.5110,status:"resolvido",support:24,days:20,desc:"A pintura sumiu e os motoristas não param. Repintada na semana passada."},
+  {id:8,title:"Mato alto em terreno baldio",cat:"Lixo e limpeza",street:"Rua das Araucárias",hood:"Ferraria",lat:-25.4505,lng:-49.5470,status:"pendente",support:9,days:4,desc:"Mato passando de um metro, com risco de bichos e descarte irregular de entulho."}
+];
+const supported=new Set();
+let filterCat="Todas";
+
+/* ---------- Números do topo ---------- */
+function animateNumber(el,to){
+  const from=Number(el.textContent)||0,start=performance.now(),dur=900;
+  const step=now=>{
+    const p=Math.min(1,(now-start)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(from+(to-from)*e);
+    if(p<1)requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function updateStats(){
+  animateNumber($("stReports"),reports.length);
+  animateNumber($("stSupport"),reports.reduce((s,r)=>s+r.support,0));
+  animateNumber($("stResolved"),reports.filter(r=>r.status==="resolvido").length);
+  animateNumber($("stHoods"),new Set(reports.map(r=>r.hood.toLowerCase())).size);
+}
+
+/* ---------- Mapa da cidade ---------- */
+const CENTER=[-25.4565,-49.5280];
+let cityMap=null;const markers={};
+function pinIcon(cat){
+  const c=CATS[cat]||CATS.Outro;
+  return L.divIcon({className:"",iconSize:[34,34],iconAnchor:[17,34],popupAnchor:[0,-30],
+    html:`<div style="width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${c.color};display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.25);border:2px solid #fff"><span style="transform:rotate(45deg);font-size:15px">${c.icon}</span></div>`});
+}
+function initCityMap(){
+  $("legend").innerHTML=Object.entries(CATS).map(([k,c])=>`<span><i style="background:${c.color}"></i>${esc(k)}</span>`).join("");
+  if(!window.L)return;
+  cityMap=L.map("cityMap",{scrollWheelZoom:false}).setView(CENTER,13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(cityMap);
+}
+function renderMap(){
+  if(cityMap){
+    Object.values(markers).forEach(m=>cityMap.removeLayer(m));
+    reports.forEach(r=>{
+      markers[r.id]=L.marker([r.lat,r.lng],{icon:pinIcon(r.cat)}).addTo(cityMap)
+        .bindPopup(`<b>${esc(r.title)}</b><br><small>📍 ${esc(r.street)} · ${esc(r.hood)}</small><br><small>🧡 ${r.support} apoios · ${esc(STATUS[r.status][0])}</small>`);
+    });
+  }
+  $("mapList").innerHTML=[...reports].sort((a,b)=>b.support-a.support).map(r=>`
+    <button class="map-item" data-id="${r.id}">
+      <i style="background:${(CATS[r.cat]||CATS.Outro).color}"></i>
+      <span><b>${esc(r.title)}</b><small>${esc(r.hood)} · 🧡 ${r.support}</small></span>
+    </button>`).join("");
+}
+function focusReport(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r||!cityMap||!markers[id])return;
+  document.querySelectorAll(".map-item").forEach(el=>el.classList.toggle("active",Number(el.dataset.id)===id));
+  cityMap.flyTo([r.lat,r.lng],16,{duration:.8});
+  markers[id].openPopup();
+}
+$("mapList").addEventListener("click",e=>{
+  const b=e.target.closest(".map-item");if(b)focusReport(Number(b.dataset.id));
+});
+
+/* ---------- Cards de relatos ---------- */
+function renderChips(){
+  const cats=["Todas",...Object.keys(CATS)];
+  $("chips").innerHTML=cats.map(c=>`<button class="chip ${c===filterCat?"active":""}" data-cat="${esc(c)}">${c==="Todas"?"Todas":(CATS[c].icon+" "+esc(c))}</button>`).join("");
+}
+$("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  filterCat=b.dataset.cat;renderChips();renderCards();
+});
+$("search").addEventListener("input",renderCards);
+function renderCards(){
+  const q=$("search").value.trim().toLowerCase();
+  const max=Math.max(...reports.map(r=>r.support),1);
+  const list=reports
+    .filter(r=>filterCat==="Todas"||r.cat===filterCat)
+    .filter(r=>!q||[r.title,r.desc,r.street,r.hood,r.cat].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=>b.support-a.support);
+  if(!list.length){$("cards").innerHTML=`<div class="empty"><b>Nenhum relato encontrado.</b><br>Tente outra busca ou categoria.</div>`;return;}
+  $("cards").innerHTML=list.map((r,i)=>{
+    const c=CATS[r.cat]||CATS.Outro,[label,cls]=STATUS[r.status],on=supported.has(r.id);
+    const media=r.photo?`<img src="${esc(r.photo)}" alt="Foto do problema">`:c.icon;
+    const rank=i<3&&filterCat==="Todas"&&!q?`<span class="rank">#${i+1} mais apoiado</span>`:"";
+    const when=r.days===0?"agora":`há ${r.days} dia${r.days>1?"s":""}`;
+    return `
+    <article class="card">
+      <div class="card-media" style="background:${c.bg}">${media}${rank}</div>
+      <div class="card-body">
+        <div class="card-meta"><span class="tag">${c.icon} ${esc(r.cat)}</span><span class="status ${cls}">${label}</span></div>
+        <h3>${esc(r.title)}</h3>
+        <p class="addr">📍 ${esc(r.street)} · ${esc(r.hood)} · ${when}</p>
+        <p class="desc">${esc(r.desc)}</p>
+        <div class="progress"><span style="width:${Math.round(r.support/max*100)}%"></span></div>
+        <span class="progress-label">${r.support} vizinho${r.support===1?" apoia":"s apoiam"} este relato</span>
+        <div class="card-actions">
+          <button class="support ${on?"on":""}" data-support="${r.id}">${on?"✓ Apoiado":"🧡 Apoiar"}</button>
+          <button class="locate" data-locate="${r.id}" aria-label="Ver no mapa" title="Ver no mapa">🗺️</button>
+        </div>
+      </div>
+    </article>`;
+  }).join("");
+}
+$("cards").addEventListener("click",e=>{
+  const s=e.target.closest("[data-support]"),l=e.target.closest("[data-locate]");
+  if(s){
+    const id=Number(s.dataset.support),r=reports.find(x=>x.id===id);
+    if(supported.has(id)){supported.delete(id);r.support--;}
+    else{supported.add(id);r.support++;toast("🧡 Obrigado pelo apoio!");}
+    refreshAll();
+  }
+  if(l){
+    $("mapa").scrollIntoView({behavior:"smooth"});
+    setTimeout(()=>focusReport(Number(l.dataset.locate)),600);
+  }
+});
+
+/* ---------- Painel ---------- */
+function renderDash(){
+  const counts={};reports.forEach(r=>counts[r.cat]=(counts[r.cat]||0)+1);
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...rows.map(r=>r[1]),1);
+  $("bars").innerHTML=rows.map(([cat,n])=>`
+    <div class="bar-row"><span>${CATS[cat].icon} ${esc(cat)}</span>
+    <div class="bar-track"><span style="width:${n/max*100}%;background:${CATS[cat].color}"></span></div><b>${n}</b></div>`).join("");
+
+  const st={pendente:0,andamento:0,resolvido:0};reports.forEach(r=>st[r.status]++);
+  const total=reports.length||1;
+  const colors={resolvido:"#1F9D6B",andamento:"#21508A",pendente:"#D99A2B"};
+  let acc=0;const stops=[];
+  for(const k of ["resolvido","andamento","pendente"]){
+    const from=acc/total*360;acc+=st[k];
+    stops.push(`${colors[k]} ${from}deg ${acc/total*360}deg`);
+  }
+  $("donut").style.background=`conic-gradient(${stops.join(",")})`;
+  $("donutPct").textContent=Math.round(st.resolvido/total*100)+"%";
+  $("donutLegend").innerHTML=["resolvido","andamento","pendente"].map(k=>
+    `<span><i style="background:${colors[k]}"></i>${STATUS[k][0].replace(" ✓","")}<b>${st[k]}</b></span>`).join("");
+
+  $("topList").innerHTML=[...reports].sort((a,b)=>b.support-a.support).slice(0,5).map(r=>
+    `<li><span><b>${esc(r.title)}</b><small>${esc(r.hood)} · 🧡 ${r.support} apoios</small></span></li>`).join("");
+}
+
+function refreshAll(){renderCards();renderMap();renderDash();updateStats();}
+
+/* ---------- Formulário ---------- */
+$("catGrid").innerHTML=Object.entries(CATS).map(([k,c])=>
+  `<label class="cat-opt"><input type="radio" name="cat" value="${esc(k)}"><span><i>${c.icon}</i>${esc(k)}</span></label>`).join("");
+
+let formMap=null,formMarker=null,picked=null;
+function initFormMap(){
+  if(!window.L)return;
+  formMap=L.map("formMap").setView(CENTER,13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(formMap);
+  formMap.on("click",e=>setPoint(e.latlng.lat,e.latlng.lng));
+}
+function setPoint(lat,lng,zoom){
+  picked={lat,lng};
+  if(!formMap)return;
+  if(formMarker)formMarker.setLatLng([lat,lng]);
+  else formMarker=L.marker([lat,lng],{draggable:true}).addTo(formMap)
+    .on("dragend",e=>{const p=e.target.getLatLng();picked={lat:p.lat,lng:p.lng};});
+  if(zoom)formMap.flyTo([lat,lng],zoom,{duration:.8});
+}
+
+$("fCep").addEventListener("input",e=>{
+  let v=e.target.value.replace(/\D/g,"").slice(0,8);
+  if(v.length>5)v=v.slice(0,5)+"-"+v.slice(5);
+  e.target.value=v;
+});
+$("fCep").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();searchCep();}});
+$("cepBtn").addEventListener("click",searchCep);
+async function searchCep(){
+  const cep=$("fCep").value.replace(/\D/g,"");
+  if(cep.length!==8){toast("Digite um CEP com 8 números.");return;}
+  const btn=$("cepBtn");btn.disabled=true;btn.textContent="Buscando...";
+  try{
+    const res=await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const d=await res.json();
+    if(d.erro){toast("CEP não encontrado. Preencha o endereço manualmente.");return;}
+    if(d.logradouro)$("fStreet").value=d.logradouro;
+    if(d.bairro)$("fHood").value=d.bairro;
+    if(d.localidade)$("fCity").value=d.localidade;
+    toast("📍 Endereço encontrado! Confira os campos.");
+    clearTimeout(geoTimer);
+    locate(cep,d.uf);
+  }catch{toast("Não foi possível consultar o CEP agora.");}
+  finally{btn.disabled=false;btn.textContent="Buscar CEP";}
+}
+let geoTimer=null,geoSeq=0;
+async function geocode(params){
+  const url="https://nominatim.openstreetmap.org/search?"+new URLSearchParams({format:"json",limit:"1",countrycodes:"br",...params});
+  const r=await fetch(url);if(!r.ok)return null;
+  const j=await r.json();return j[0]?{lat:+j[0].lat,lng:+j[0].lon}:null;
+}
+async function locate(cep,uf){
+  const street=$("fStreet").value.trim(),hood=$("fHood").value.trim(),city=$("fCity").value.trim();
+  if(!city)return;
+  const state=uf||"PR",seq=++geoSeq,tries=[];
+  if(street)tries.push([{street,city,state},17]);
+  if(cep)tries.push([{postalcode:cep.slice(0,5)+"-"+cep.slice(5)},16]);
+  if(hood)tries.push([{q:`${hood}, ${city}, ${state}`},15]);
+  tries.push([{city,state},13]);
+  try{
+    for(const [p,z] of tries){
+      const f=await geocode(p);
+      if(seq!==geoSeq)return;
+      if(f){setPoint(f.lat,f.lng,z);return;}
+    }
+  }catch{}
+}
+["fStreet","fHood","fCity"].forEach(id=>$(id).addEventListener("input",()=>{
+  clearTimeout(geoTimer);geoTimer=setTimeout(()=>locate(),1000);
+}));
+
+let photoUrl=null;
+$("fPhoto").addEventListener("change",()=>{
+  const f=$("fPhoto").files[0];
+  if(photoUrl)URL.revokeObjectURL(photoUrl);
+  photoUrl=f?URL.createObjectURL(f):null;
+  $("fPreview").hidden=!photoUrl;
+  if(photoUrl)$("fPreview").src=photoUrl;
+});
+
+$("reportForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const cat=document.querySelector('input[name="cat"]:checked')?.value;
+  const title=$("fTitle").value.trim(),street=$("fStreet").value.trim(),hood=$("fHood").value.trim(),desc=$("fDesc").value.trim();
+  if(!cat||!title||!street||!hood||!desc){toast("Preencha a categoria, o título, a rua, o bairro e a descrição.");return;}
+  const pos=picked||{lat:CENTER[0]+(Math.random()-.5)*.02,lng:CENTER[1]+(Math.random()-.5)*.02};
+  const id=Date.now();
+  reports.push({id,title,cat,street,hood,lat:pos.lat,lng:pos.lng,status:"pendente",support:1,days:0,desc,photo:photoUrl});
+  supported.add(id);
+  photoUrl=null;
+  e.target.reset();$("fCity").value="Campo Largo";$("fPreview").hidden=true;
+  picked=null;if(formMarker){formMap.removeLayer(formMarker);formMarker=null;}
+  filterCat="Todas";renderChips();refreshAll();
+  toast("✅ Relato publicado! (protótipo: ele some ao recarregar a página)");
+  $("relatos").scrollIntoView({behavior:"smooth"});
+});
+
+/* ---------- Diversos ---------- */
+let toastTimer=null;
+function toast(msg){
+  const t=$("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),3600);
+}
+$("menuBtn").addEventListener("click",()=>{
+  const open=$("navLinks").classList.toggle("open");
+  $("menuBtn").setAttribute("aria-expanded",String(open));
+});
+$("navLinks").addEventListener("click",e=>{
+  if(e.target.closest("a")){$("navLinks").classList.remove("open");$("menuBtn").setAttribute("aria-expanded","false");}
+});
+const io=new IntersectionObserver(entries=>entries.forEach(en=>{
+  if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target);}
+}),{threshold:.12});
+document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+initCityMap();initFormMap();renderChips();refreshAll();
+</script>
+</body>
+</html>
