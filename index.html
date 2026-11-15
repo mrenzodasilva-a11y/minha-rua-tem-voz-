@@ -714,7 +714,8 @@ repText:"Os relatos mais apoiados aparecem primeiro. Apoie os que também afetam
 all:"Todas",searchAria:"Buscar relatos",searchPlaceholder:"Buscar por rua, bairro ou problema",
 reportsFound:"Relatos encontrados: {n}",rank:"#{n} mais apoiado",
 supportersZero:"Seja o primeiro a apoiar este relato",supportersOne:"1 vizinho apoia este relato",supportersMany:"{n} vizinhos apoiam este relato",
-support:"🧡 Apoiar",supported:"✓ Apoiado",seeOnMap:"Ver no mapa",noLocation:"Este relato não tem localização no mapa",
+support:"🧡 Apoiar",supported:"✓ Apoiado",seeOnMap:"Ver no mapa",
+locating:"📍 Localizando o endereço no mapa...",notFoundOnMap:"Não foi possível localizar este endereço no mapa.",approxLocation:"localização aproximada pelo endereço",
 comments:"Comentários",writeComment:"Escreva um comentário...",sendComment:"Enviar comentário",noComments:"Ainda não há comentários.",
 anonymous:"Morador",commentSent:"Comentário enviado!",commentError:"Não foi possível enviar o comentário.",
 noReports:"Nenhum relato encontrado.",noReportsText:"Tente outra busca ou categoria.",
@@ -782,7 +783,8 @@ repText:"The most supported reports appear first. Support the ones that affect y
 all:"All",searchAria:"Search reports",searchPlaceholder:"Search by street, neighborhood or problem",
 reportsFound:"Reports found: {n}",rank:"#{n} most supported",
 supportersZero:"Be the first to support this report",supportersOne:"1 neighbor supports this report",supportersMany:"{n} neighbors support this report",
-support:"🧡 Support",supported:"✓ Supported",seeOnMap:"See on map",noLocation:"This report has no map location",
+support:"🧡 Support",supported:"✓ Supported",seeOnMap:"See on map",
+locating:"📍 Finding the address on the map...",notFoundOnMap:"Could not find this address on the map.",approxLocation:"approximate location based on the address",
 comments:"Comments",writeComment:"Write a comment...",sendComment:"Send comment",noComments:"No comments yet.",
 anonymous:"Resident",commentSent:"Comment sent!",commentError:"Could not send the comment.",
 noReports:"No reports found.",noReportsText:"Try another search or category.",
@@ -850,7 +852,8 @@ repText:"Los informes más apoyados aparecen primero. Apoya los que también te 
 all:"Todas",searchAria:"Buscar informes",searchPlaceholder:"Buscar por calle, barrio o problema",
 reportsFound:"Informes encontrados: {n}",rank:"#{n} más apoyado",
 supportersZero:"Sé el primero en apoyar este informe",supportersOne:"1 vecino apoya este informe",supportersMany:"{n} vecinos apoyan este informe",
-support:"🧡 Apoyar",supported:"✓ Apoyado",seeOnMap:"Ver en el mapa",noLocation:"Este informe no tiene ubicación en el mapa",
+support:"🧡 Apoyar",supported:"✓ Apoyado",seeOnMap:"Ver en el mapa",
+locating:"📍 Buscando la dirección en el mapa...",notFoundOnMap:"No se pudo ubicar esta dirección en el mapa.",approxLocation:"ubicación aproximada según la dirección",
 comments:"Comentarios",writeComment:"Escribe un comentario...",sendComment:"Enviar comentario",noComments:"Todavía no hay comentarios.",
 anonymous:"Vecino",commentSent:"¡Comentario enviado!",commentError:"No se pudo enviar el comentario.",
 noReports:"No se encontraron informes.",noReportsText:"Prueba otra búsqueda o categoría.",
@@ -970,6 +973,57 @@ const hasLocation = r => r.latitude !== null && r.longitude !== null && r.latitu
   && r.latitude !== undefined && r.longitude !== undefined
   && Number.isFinite(Number(r.latitude)) && Number.isFinite(Number(r.longitude));
 const supportsOf = r => Number(r.support_count) || 0;
+
+/* Relatos sem coordenadas: o site localiza pelo endereço escrito e guarda o resultado no navegador */
+const geoPoints = {};
+function cachedGeo(id){
+  try{ const v = localStorage.getItem("mrtv-geo-" + id); return v ? JSON.parse(v) : undefined; }catch{ return undefined; }
+}
+function saveGeo(id, value){
+  geoPoints[id] = value;
+  try{ localStorage.setItem("mrtv-geo-" + id, JSON.stringify(value)); }catch{}
+}
+function pointOf(r){
+  if(hasLocation(r)) return {lat:Number(r.latitude), lng:Number(r.longitude), approx:false};
+  const g = geoPoints[r.id] ?? cachedGeo(r.id);
+  return g && Number.isFinite(g.lat) && Number.isFinite(g.lng) ? {lat:g.lat, lng:g.lng, approx:true} : null;
+}
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function geocodeReport(r){
+  const street = String(r.street || "").trim(), hood = String(r.neighborhood || "").trim();
+  const city = String(r.city || "").trim(), state = String(r.state || "").trim();
+  const cep = String(r.cep || "").replace(/\D/g, "");
+  const tries = [];
+  if(street && city) tries.push({street, city, state});
+  if(cep.length === 8) tries.push({postalcode:cep.slice(0, 5) + "-" + cep.slice(5)});
+  if(hood && city) tries.push({q:[hood, city, state].filter(Boolean).join(", ")});
+  if(city) tries.push({city, state});
+  for(let i = 0; i < tries.length; i++){
+    if(i > 0) await sleep(1100); // respeita o limite do serviço gratuito (1 pedido por segundo)
+    const found = await geocode(tries[i]);
+    if(found) return found;
+  }
+  return null;
+}
+async function locateReport(r){
+  let found = null;
+  try{ found = await geocodeReport(r); }catch(error){ console.error("ERRO AO LOCALIZAR ENDEREÇO:", error); }
+  saveGeo(r.id, found ? {lat:found.lat, lng:found.lng} : {lat:null, lng:null});
+  return pointOf(r);
+}
+let geoQueueRunning = false;
+async function geocodeMissing(){
+  if(geoQueueRunning) return;
+  geoQueueRunning = true;
+  const missing = reports.filter(r => !hasLocation(r) && geoPoints[r.id] === undefined && cachedGeo(r.id) === undefined).slice(0, 25);
+  for(const r of missing){
+    await locateReport(r);
+    renderMap();
+    await sleep(1100);
+  }
+  geoQueueRunning = false;
+  if(missing.length) fitMap();
+}
 const byMostSupported = (a, b) => (supportsOf(b) - supportsOf(a)) || (new Date(b.created_at || 0) - new Date(a.created_at || 0));
 
 /* Logos: se o arquivo não carregar, mostra um selo com o nome */
@@ -1035,7 +1089,7 @@ function updateStats(){
    MAPA DA CIDADE
    ===================================================================== */
 const CENTER = [-25.4565, -49.5280]; // Campo Largo - PR
-let cityMap = null, mapFitted = false;
+let cityMap = null, userFocused = false;
 const markers = {};
 function tiles(){
   return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -1056,21 +1110,23 @@ function renderLegend(){
   $("legend").innerHTML = Object.entries(CATS).map(([value, c]) =>
     `<span><i style="background:${c.color}"></i>${esc(t(c.key))}</span>`).join("");
 }
+function fitMap(){
+  if(!cityMap || userFocused) return;
+  const points = reports.map(pointOf).filter(Boolean);
+  if(points.length === 1) cityMap.setView([points[0].lat, points[0].lng], 15);
+  else if(points.length > 1) cityMap.fitBounds(L.latLngBounds(points.map(p => [p.lat, p.lng])), {padding:[40,40], maxZoom:15});
+}
 function renderMap(){
-  const located = reports.filter(hasLocation).sort(byMostSupported);
+  const located = reports.filter(r => pointOf(r)).sort(byMostSupported);
   if(cityMap){
     Object.keys(markers).forEach(id => { cityMap.removeLayer(markers[id]); delete markers[id]; });
     located.forEach(r => {
-      const address = [r.street, r.neighborhood].filter(Boolean).join(" · ");
-      markers[r.id] = L.marker([Number(r.latitude), Number(r.longitude)], {icon:pinIcon(r.category)})
+      const p = pointOf(r);
+      const address = [r.street, r.neighborhood, r.city].filter(Boolean).join(" · ");
+      markers[r.id] = L.marker([p.lat, p.lng], {icon:pinIcon(r.category)})
         .addTo(cityMap)
-        .bindPopup(`<b>${esc(r.title)}</b><br><small>📍 ${esc(address || t("addressUnknown"))}</small><br><small>🧡 ${supportsOf(r)} ${esc(t("supportsWord"))} · ${esc(statusLabel(statusOf(r.status)))}</small>`);
+        .bindPopup(`<b>${esc(r.title)}</b><br><small>📍 ${esc(address || t("addressUnknown"))}</small><br><small>🧡 ${supportsOf(r)} ${esc(t("supportsWord"))} · ${esc(statusLabel(statusOf(r.status)))}</small>${p.approx ? `<br><small style="color:#5B6B7C">≈ ${esc(t("approxLocation"))}</small>` : ""}`);
     });
-    if(!mapFitted && feedState === "ready"){
-      mapFitted = true;
-      if(located.length === 1) cityMap.setView([Number(located[0].latitude), Number(located[0].longitude)], 15);
-      else if(located.length > 1) cityMap.fitBounds(L.latLngBounds(located.map(r => [Number(r.latitude), Number(r.longitude)])), {padding:[40,40], maxZoom:15});
-    }
   }
   const list = $("mapList");
   if(!window.L){ list.innerHTML = `<p class="map-note">${esc(t("mapUnavailable"))}</p>`; return; }
@@ -1083,12 +1139,21 @@ function renderMap(){
       <span><b>${esc(r.title)}</b><small>${esc(r.neighborhood || catLabel(r.category))} · 🧡 ${supportsOf(r)}</small></span>
     </button>`).join("");
 }
-function focusReport(id){
+async function focusReport(id){
   const r = reports.find(x => String(x.id) === String(id));
-  if(!r || !cityMap || !markers[r.id]) return;
+  if(!r) return;
+  if(!cityMap){ toast(t("mapUnavailable")); return; }
+  userFocused = true;
+  let p = pointOf(r);
+  if(!p){
+    toast(t("locating"));
+    p = await locateReport(r);
+    renderMap();
+    if(!p){ toast(t("notFoundOnMap")); return; }
+  }
   document.querySelectorAll(".map-item").forEach(el => el.classList.toggle("active", el.dataset.id === String(id)));
-  cityMap.flyTo([Number(r.latitude), Number(r.longitude)], 16, {duration:.8});
-  markers[r.id].openPopup();
+  cityMap.flyTo([p.lat, p.lng], 16, {duration:.8});
+  if(markers[r.id]) markers[r.id].openPopup();
 }
 $("mapList").addEventListener("click", e => {
   const b = e.target.closest(".map-item");
@@ -1154,7 +1219,6 @@ function renderCards(){
     const address = [r.street, r.neighborhood, r.city].filter(Boolean).join(" · ") || t("addressUnknown");
     const when = timeAgo(r.created_at);
     const rank = showRank && i < 3 && n > 0 ? `<span class="rank">${esc(t("rank").replace("{n}", i + 1))}</span>` : "";
-    const located = hasLocation(r);
     return `
     <article class="card">
       <div class="card-media" style="background:${c.bg}">
@@ -1170,7 +1234,7 @@ function renderCards(){
         <div class="card-actions">
           <button class="support ${on ? "on" : ""}" data-action="support" data-id="${esc(r.id)}" ${on || pending ? "disabled" : ""}>${esc(on ? t("supported") : t("support"))}</button>
           <button class="icon-btn" data-action="comments" data-id="${esc(r.id)}" aria-expanded="${openComments.has(String(r.id))}" aria-label="${esc(t("comments"))}" title="${esc(t("comments"))}">💬</button>
-          <button class="icon-btn" data-action="locate" data-id="${esc(r.id)}" ${located ? "" : "disabled"} aria-label="${esc(located ? t("seeOnMap") : t("noLocation"))}" title="${esc(located ? t("seeOnMap") : t("noLocation"))}">🗺️</button>
+          <button class="icon-btn" data-action="locate" data-id="${esc(r.id)}" aria-label="${esc(t("seeOnMap"))}" title="${esc(t("seeOnMap"))}">🗺️</button>
         </div>
         <div class="comments" id="comments-${esc(r.id)}" ${openComments.has(String(r.id)) ? "" : "hidden"}>
           <div class="comments-list" id="comments-list-${esc(r.id)}"><p class="comments-empty">${esc(t("loading"))}</p></div>
@@ -1328,6 +1392,8 @@ async function loadReports(){
   reports = data || [];
   feedState = "ready";
   refreshAll();
+  fitMap();
+  geocodeMissing();
 }
 
 /* =====================================================================
