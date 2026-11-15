@@ -4,7 +4,7 @@
 
 🔗 **Acesse:** https://mrenzodasilva-a11y.github.io/minha-rua-tem-voz-/
 
-> Projeto desenvolvido para o **Projeto ACICLA**.
+> Projeto desenvolvido para o **Projeto ACICLA** por **Enzo da Silva**, criador da ideia, autor e desenvolvedor.
 
 ---
 
@@ -116,5 +116,9 @@ Para usar um banco de dados próprio, troque a URL e a chave pública do Supabas
 ## 🏫 Sobre o projeto
 
 O **Minha Rua Tem Voz** foi criado como projeto escolar para o **Projeto ACICLA**, com o objetivo de usar a tecnologia para aproximar moradores, comércio e poder público na construção de uma cidade melhor.
+
+### 👤 Autor
+
+**Enzo da Silva**: criador da ideia, autor e desenvolvedor do projeto.
 
 > **Uma cidade melhor começa com a sua voz.**
