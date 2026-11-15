@@ -291,7 +291,7 @@ textarea.form-control{min-height:125px;resize:vertical}
       <span>Minha Rua Tem Voz</span>
     </a>
 
-    <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" data-i18n-aria-label="openMenu" aria-expanded="false">☰</button>
 
     <ul class="nav-links" id="navLinks">
       <li><a href="#inicio" data-i18n="home">Início</a></li>
@@ -300,7 +300,7 @@ textarea.form-control{min-height:125px;resize:vertical}
     </ul>
 
     <label class="sr-only" for="language" data-i18n="language">Idioma</label>
-    <select class="language-select" id="language" aria-label="Idioma">
+    <select class="language-select" id="language" aria-label="Idioma" data-i18n-aria-label="language">
       <option value="pt">🇧🇷 Português</option>
       <option value="en">🇺🇸 English</option>
       <option value="es">🇪🇸 Español</option>
@@ -374,22 +374,22 @@ textarea.form-control{min-height:125px;resize:vertical}
 
           <div class="form-group">
             <label for="street"><span data-i18n="streetLabel">Rua ou avenida</span> <span class="required">*</span></label>
-            <input class="form-control" id="street" maxlength="120" required placeholder="Nome da rua">
+            <input class="form-control" id="street" maxlength="120" required placeholder="Nome da rua" data-i18n-placeholder="streetPlaceholder">
           </div>
 
           <div class="form-group">
             <label for="neighborhood"><span data-i18n="neighborhoodLabel">Bairro</span> <span class="required">*</span></label>
-            <input class="form-control" id="neighborhood" maxlength="100" required placeholder="Nome do bairro">
+            <input class="form-control" id="neighborhood" maxlength="100" required placeholder="Nome do bairro" data-i18n-placeholder="neighborhoodPlaceholder">
           </div>
 
           <div class="form-group">
             <label for="city"><span data-i18n="cityLabel">Cidade</span> <span class="required">*</span></label>
-            <input class="form-control" id="city" maxlength="100" required placeholder="Sua cidade">
+            <input class="form-control" id="city" maxlength="100" required placeholder="Sua cidade" data-i18n-placeholder="cityPlaceholder">
           </div>
 
           <div class="form-group">
             <label for="state"><span data-i18n="stateLabel">Estado</span> <span class="required">*</span></label>
-            <input class="form-control" id="state" maxlength="60" required placeholder="Ex.: PR">
+            <input class="form-control" id="state" maxlength="60" required placeholder="Ex.: PR" data-i18n-placeholder="statePlaceholder">
           </div>
 
           <div class="form-group full-width">
@@ -412,7 +412,7 @@ textarea.form-control{min-height:125px;resize:vertical}
               <span data-i18n="photoHint">JPG, PNG ou WEBP. Até 50 MB.</span>
               <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
             </div>
-            <img id="imagePreview" class="image-preview" alt="Prévia da foto selecionada">
+            <img id="imagePreview" class="image-preview" alt="Prévia da foto selecionada" data-i18n-alt="previewAlt">
           </div>
         </div>
 
@@ -435,8 +435,8 @@ textarea.form-control{min-height:125px;resize:vertical}
     <div class="feed-toolbar">
       <span class="feed-count" id="feedCount">Carregando relatos...</span>
       <div class="feed-filters">
-        <input class="filter-select" id="searchInput" placeholder="Buscar por rua ou problema..." data-i18n-placeholder="searchPlaceholder" aria-label="Buscar relatos">
-        <select class="filter-select" id="categoryFilter" aria-label="Filtrar por categoria">
+        <input class="filter-select" id="searchInput" placeholder="Buscar por rua ou problema..." data-i18n-placeholder="searchPlaceholder" aria-label="Buscar relatos" data-i18n-aria-label="searchAria">
+        <select class="filter-select" id="categoryFilter" aria-label="Filtrar por categoria" data-i18n-aria-label="filterAria">
           <option value="" data-i18n="allCategories">Todas as categorias</option>
           <option value="Pavimentação" data-i18n="catRoad">Buracos e pavimentação</option>
           <option value="Iluminação" data-i18n="catLight">Iluminação pública</option>
@@ -486,6 +486,7 @@ let map = null;
 let mapMarker = null;
 let selectedLocation = null;
 let currentLanguage = "pt";
+let feedState = "loading"; // loading | ready | error | setup
 let toastTimer = null;
 
 const translations = {
@@ -526,20 +527,39 @@ commentError:"Não foi possível enviar o comentário.",commentSent:"Comentário
 supportError:"Não foi possível registrar seu apoio.",alreadySupported:"Você já apoiou este relato neste navegador.",
 mapUnavailable:"O mapa não está disponível agora. Você pode publicar normalmente sem ele.",
 photoUploadError:"Não foi possível enviar a foto. Tente outra imagem.",
-dateUnknown:"Data não informada"
+dateUnknown:"Data não informada",
+addressFilled:"Endereço preenchido. Confira os campos!",
+sending:"Enviando...",
+addressUnknown:"Endereço não informado",
+reportsFound:"Relatos encontrados: {n}",
+openMenu:"Abrir menu",
+searchAria:"Buscar relatos",
+filterAria:"Filtrar por categoria",
+photoAlt:"Foto do problema",
+previewAlt:"Prévia da foto selecionada",
+docTitle:"Minha Rua Tem Voz | Fórum Comunitário",
+loadingReports:"Carregando relatos...",
+loadingErrorHint:"Confira sua conexão e tente novamente.",
+setupTitle:"Conecte o Supabase",
+setupText:"Adicione a URL e a chave pública no início do JavaScript para carregar e publicar relatos.",
+setupMode:"Modo de configuração",
+streetPlaceholder:"Nome da rua",
+neighborhoodPlaceholder:"Nome do bairro",
+cityPlaceholder:"Sua cidade",
+statePlaceholder:"Ex.: PR"
 },
 en:{
 home:"Home",report:"Report a problem",community:"Community",language:"Language",
 heroTag:"Your community, your voice",heroTitle:"A better city starts with your voice.",
 heroText:"Report neighborhood problems, support others and help bring attention to improvements in your community.",
 heroButton:"📢 Report a problem",statReports:"Reports published",statSupport:"Community support",
-formHeading:"Tell us what is happening",formSubheading:"Fill in the details below. It is simple and takes only a few minutes.",
+formHeading:"Tell us what is happening.",formSubheading:"Fill in the details below. It is simple and takes only a few minutes.",
 formTitle:"Report a problem",formDescription:"Describe the situation so other people in the community can learn about it and support it.",
 titleLabel:"Problem title",titlePlaceholder:"E.g. Large pothole on the main street",
 categoryLabel:"Category",chooseCategory:"Choose a category",catRoad:"Roads and potholes",
 catLight:"Public lighting",catTrash:"Trash and cleaning",catSewage:"Water and sanitation",
 catTransport:"Public transport",catSafety:"Safety and signs",catAccess:"Accessibility",catOther:"Other",
-cepLabel:"Postal code (optional)",searchCep:"Search",cepHint:"If you do not know the postal code, enter the address manually.",
+cepLabel:"Postal code – CEP (optional)",searchCep:"Search",cepHint:"If you do not know the postal code, enter the address manually.",
 streetLabel:"Street or avenue",neighborhoodLabel:"Neighborhood",cityLabel:"City",stateLabel:"State",
 addressNote:"📍 You do not need the map to publish. The written address is enough. You can mark the location on the map below if you wish.",
 mapButton:"🗺️ Show map (optional)",mapHide:"Hide map",mapHint:"Tap the map to mark the approximate location. This is optional.",
@@ -562,20 +582,39 @@ publishError:"Could not publish. Check your connection and try again.",
 commentError:"Could not send the comment.",commentSent:"Comment sent!",supportError:"Could not register your support.",
 alreadySupported:"You have already supported this report in this browser.",
 mapUnavailable:"The map is unavailable right now. You can publish without it.",
-photoUploadError:"Could not upload the photo. Try another image.",dateUnknown:"Date unavailable"
+photoUploadError:"Could not upload the photo. Try another image.",dateUnknown:"Date unavailable",
+addressFilled:"Address filled in. Please check the fields!",
+sending:"Sending...",
+addressUnknown:"Address not provided",
+reportsFound:"Reports found: {n}",
+openMenu:"Open menu",
+searchAria:"Search reports",
+filterAria:"Filter by category",
+photoAlt:"Photo of the problem",
+previewAlt:"Preview of the selected photo",
+docTitle:"Minha Rua Tem Voz | Community Forum",
+loadingReports:"Loading reports...",
+loadingErrorHint:"Check your connection and try again.",
+setupTitle:"Connect Supabase",
+setupText:"Add the URL and the public key at the top of the JavaScript to load and publish reports.",
+setupMode:"Setup mode",
+streetPlaceholder:"Street name",
+neighborhoodPlaceholder:"Neighborhood name",
+cityPlaceholder:"Your city",
+statePlaceholder:"E.g. PR"
 },
 es:{
 home:"Inicio",report:"Informar un problema",community:"Comunidad",language:"Idioma",
 heroTag:"Tu comunidad, tu voz",heroTitle:"Una ciudad mejor comienza con tu voz.",
 heroText:"Informa problemas de tu barrio, apoya a otras personas y ayuda a mejorar tu comunidad.",
 heroButton:"📢 Informar un problema",statReports:"Informes publicados",statSupport:"Apoyos de la comunidad",
-formHeading:"Cuéntanos qué está pasando",formSubheading:"Completa los datos. Es sencillo y lleva pocos minutos.",
+formHeading:"Cuéntanos qué está pasando.",formSubheading:"Completa los datos. Es sencillo y lleva pocos minutos.",
 formTitle:"Informar un problema",formDescription:"Describe la situación para que otras personas puedan conocerla y apoyarla.",
 titleLabel:"Título del problema",titlePlaceholder:"Ej.: Gran bache en la calle principal",
 categoryLabel:"Categoría",chooseCategory:"Selecciona una categoría",catRoad:"Baches y pavimentación",
 catLight:"Iluminación pública",catTrash:"Basura y limpieza",catSewage:"Agua y saneamiento",
 catTransport:"Transporte público",catSafety:"Seguridad y señalización",catAccess:"Accesibilidad",catOther:"Otro",
-cepLabel:"Código postal (opcional)",searchCep:"Buscar",cepHint:"Si no conoces el código postal, puedes escribir la dirección manualmente.",
+cepLabel:"Código postal – CEP (opcional)",searchCep:"Buscar",cepHint:"Si no conoces el código postal, puedes escribir la dirección manualmente.",
 streetLabel:"Calle o avenida",neighborhoodLabel:"Barrio",cityLabel:"Ciudad",stateLabel:"Estado",
 addressNote:"📍 No necesitas el mapa para publicar. La dirección escrita es suficiente. Si quieres, puedes marcar el lugar en el mapa.",
 mapButton:"🗺️ Mostrar mapa (opcional)",mapHide:"Ocultar mapa",mapHint:"Toca el mapa para marcar la ubicación aproximada. Es opcional.",
@@ -591,46 +630,84 @@ pending:"Pendiente",progress:"En curso",resolved:"Resuelto",support:"Apoyar",sup
 comments:"Comentarios",writeComment:"Escribe un comentario...",sendComment:"Enviar comentario",
 noComments:"Todavía no hay comentarios.",anonymous:"Vecino",loadingError:"No se pudieron cargar los informes.",
 cepInvalid:"Introduce un código postal válido de 8 dígitos.",cepNotFound:"Código postal no encontrado. Comprueba los números o escribe la dirección manualmente.",
-cepError:"No se pudo consultar el código postal.",photoTooLarge:"La imagen debe tener un máximo de 50 MB.",
+cepError:"No se pudo consultar el código postal. Inténtalo de nuevo o escribe la dirección manualmente.",photoTooLarge:"La imagen debe tener un máximo de 50 MB.",
 photoInvalid:"Elige una imagen JPG, PNG o WEBP.",fillRequired:"Completa todos los campos obligatorios.",
 published:"¡Informe publicado correctamente!",publishError:"No se pudo publicar. Comprueba la conexión.",
 commentError:"No se pudo enviar el comentario.",commentSent:"¡Comentario enviado!",supportError:"No se pudo registrar tu apoyo.",
 alreadySupported:"Ya has apoyado este informe en este navegador.",mapUnavailable:"El mapa no está disponible. Puedes publicar sin él.",
-photoUploadError:"No se pudo subir la foto.",dateUnknown:"Fecha no disponible"
+photoUploadError:"No se pudo subir la foto.",dateUnknown:"Fecha no disponible",
+addressFilled:"Dirección completada. ¡Revisa los campos!",
+sending:"Enviando...",
+addressUnknown:"Dirección no informada",
+reportsFound:"Informes encontrados: {n}",
+openMenu:"Abrir menú",
+searchAria:"Buscar informes",
+filterAria:"Filtrar por categoría",
+photoAlt:"Foto del problema",
+previewAlt:"Vista previa de la foto seleccionada",
+docTitle:"Minha Rua Tem Voz | Foro comunitario",
+loadingReports:"Cargando informes...",
+loadingErrorHint:"Comprueba tu conexión e inténtalo de nuevo.",
+setupTitle:"Conecta Supabase",
+setupText:"Añade la URL y la clave pública al inicio del JavaScript para cargar y publicar informes.",
+setupMode:"Modo de configuración",
+streetPlaceholder:"Nombre de la calle",
+neighborhoodPlaceholder:"Nombre del barrio",
+cityPlaceholder:"Tu ciudad",
+statePlaceholder:"Ej.: PR"
 },
 fr:{
 home:"Accueil",report:"Signaler un problème",community:"Communauté",language:"Langue",
 heroTag:"Votre communauté, votre voix",heroTitle:"Une meilleure ville commence avec votre voix.",
 heroText:"Signalez les problèmes de votre quartier et soutenez les améliorations de votre communauté.",
 heroButton:"📢 Signaler un problème",statReports:"Signalements publiés",statSupport:"Soutiens communautaires",
-formHeading:"Dites-nous ce qui se passe",formSubheading:"Remplissez les informations. C'est simple et rapide.",
+formHeading:"Dites-nous ce qui se passe.",formSubheading:"Remplissez les informations. C'est simple et rapide.",
 formTitle:"Signaler un problème",formDescription:"Décrivez la situation pour que les autres habitants puissent la connaître et la soutenir.",
 titleLabel:"Titre du problème",titlePlaceholder:"Ex. : Grand nid-de-poule dans la rue principale",
 categoryLabel:"Catégorie",chooseCategory:"Choisir une catégorie",catRoad:"Routes et nids-de-poule",
 catLight:"Éclairage public",catTrash:"Déchets et nettoyage",catSewage:"Eau et assainissement",
 catTransport:"Transports publics",catSafety:"Sécurité et signalisation",catAccess:"Accessibilité",catOther:"Autre",
-cepLabel:"Code postal (facultatif)",searchCep:"Rechercher",cepHint:"Vous pouvez saisir l'adresse manuellement.",
+cepLabel:"Code postal – CEP (facultatif)",searchCep:"Rechercher",cepHint:"Si vous ne connaissez pas le code postal, vous pouvez saisir l'adresse manuellement.",
 streetLabel:"Rue ou avenue",neighborhoodLabel:"Quartier",cityLabel:"Ville",stateLabel:"État",
 addressNote:"📍 La carte n'est pas obligatoire. L'adresse écrite suffit. Vous pouvez marquer l'endroit sur la carte si vous le souhaitez.",
 mapButton:"🗺️ Afficher la carte (facultatif)",mapHide:"Masquer la carte",mapHint:"Touchez la carte pour marquer l'emplacement approximatif.",
 descriptionLabel:"Description",descriptionPlaceholder:"Expliquez ce qui s'est passé, où se trouve le problème et depuis quand...",
 photoLabel:"Photo (facultative)",photoTitle:"Ajouter une photo",photoHint:"JPG, PNG ou WEBP. Jusqu'à 50 Mo.",
-privacyNote:"N'incluez pas de mots de passe, documents, téléphones ou données personnelles. Évitez les visages et plaques.",
-submitButton:"📢 Publier",feedHeading:"Que se passe-t-il dans votre communauté ?",
+privacyNote:"N'incluez pas de mots de passe, documents, numéros de téléphone ou données personnelles. Évitez de photographier des visages et des plaques d'immatriculation.",
+submitButton:"📢 Publier le signalement",feedHeading:"Que se passe-t-il dans votre communauté ?",
 feedSubheading:"Consultez les problèmes signalés et soutenez ceux qui nécessitent une attention.",
 searchPlaceholder:"Rechercher une rue ou un problème...",allCategories:"Toutes les catégories",
 loading:"Chargement...",noReports:"Aucun signalement trouvé",noReportsText:"Les signalements publiés apparaîtront ici.",
 footerText:"Une communauté participative commence par l'information et la collaboration.",
 pending:"En attente",progress:"En cours",resolved:"Résolu",support:"Soutenir",supported:"Soutenu",
-comments:"Commentaires",writeComment:"Écrire un commentaire...",sendComment:"Envoyer",noComments:"Aucun commentaire.",
+comments:"Commentaires",writeComment:"Écrire un commentaire...",sendComment:"Envoyer le commentaire",noComments:"Aucun commentaire.",
 anonymous:"Habitant",loadingError:"Impossible de charger les signalements.",
 cepInvalid:"Saisissez un code postal valide de 8 chiffres.",cepNotFound:"Code postal introuvable. Vérifiez ou saisissez l'adresse manuellement.",
-cepError:"Impossible de consulter le code postal.",photoTooLarge:"L'image doit faire 50 Mo maximum.",
+cepError:"Impossible de consulter le code postal. Réessayez ou saisissez l'adresse manuellement.",photoTooLarge:"L'image doit faire 50 Mo maximum.",
 photoInvalid:"Choisissez une image JPG, PNG ou WEBP.",fillRequired:"Remplissez tous les champs obligatoires.",
 published:"Signalement publié !",publishError:"Publication impossible. Vérifiez votre connexion.",
 commentError:"Impossible d'envoyer le commentaire.",commentSent:"Commentaire envoyé !",supportError:"Impossible d'enregistrer votre soutien.",
 alreadySupported:"Vous avez déjà soutenu ce signalement sur ce navigateur.",
-mapUnavailable:"Carte indisponible. Vous pouvez publier sans elle.",photoUploadError:"Échec de l'envoi de la photo.",dateUnknown:"Date inconnue"
+mapUnavailable:"Carte indisponible. Vous pouvez publier sans elle.",photoUploadError:"Échec de l'envoi de la photo.",dateUnknown:"Date inconnue",
+addressFilled:"Adresse remplie. Vérifiez les champs !",
+sending:"Envoi en cours...",
+addressUnknown:"Adresse non renseignée",
+reportsFound:"Signalements trouvés : {n}",
+openMenu:"Ouvrir le menu",
+searchAria:"Rechercher des signalements",
+filterAria:"Filtrer par catégorie",
+photoAlt:"Photo du problème",
+previewAlt:"Aperçu de la photo sélectionnée",
+docTitle:"Minha Rua Tem Voz | Forum communautaire",
+loadingReports:"Chargement des signalements...",
+loadingErrorHint:"Vérifiez votre connexion et réessayez.",
+setupTitle:"Connectez Supabase",
+setupText:"Ajoutez l'URL et la clé publique au début du JavaScript pour charger et publier des signalements.",
+setupMode:"Mode configuration",
+streetPlaceholder:"Nom de la rue",
+neighborhoodPlaceholder:"Nom du quartier",
+cityPlaceholder:"Votre ville",
+statePlaceholder:"Ex. : PR"
 },
 de:{
 home:"Start",report:"Problem melden",community:"Gemeinschaft",language:"Sprache",
@@ -643,8 +720,8 @@ titleLabel:"Titel des Problems",titlePlaceholder:"Z. B. Großes Schlagloch in de
 categoryLabel:"Kategorie",chooseCategory:"Kategorie auswählen",catRoad:"Straßen und Schlaglöcher",
 catLight:"Straßenbeleuchtung",catTrash:"Müll und Reinigung",catSewage:"Wasser und Abwasser",
 catTransport:"Öffentliche Verkehrsmittel",catSafety:"Sicherheit und Beschilderung",catAccess:"Barrierefreiheit",catOther:"Sonstiges",
-cepLabel:"Postleitzahl (optional)",searchCep:"Suchen",cepHint:"Du kannst die Adresse auch manuell eingeben.",
-streetLabel:"Straße oder Allee",neighborhoodLabel:"Stadtteil",cityLabel:"Stadt",stateLabel:"Bundesland",
+cepLabel:"Postleitzahl – CEP (optional)",searchCep:"Suchen",cepHint:"Wenn du die Postleitzahl nicht kennst, kannst du die Adresse auch manuell eingeben.",
+streetLabel:"Straße oder Allee",neighborhoodLabel:"Stadtteil",cityLabel:"Stadt",stateLabel:"Bundesstaat",
 addressNote:"📍 Die Karte ist nicht erforderlich. Die schriftliche Adresse reicht aus. Du kannst den Ort optional auf der Karte markieren.",
 mapButton:"🗺️ Karte anzeigen (optional)",mapHide:"Karte ausblenden",mapHint:"Tippe auf die Karte, um den ungefähren Ort zu markieren.",
 descriptionLabel:"Beschreibung",descriptionPlaceholder:"Erkläre, was passiert ist, wo das Problem liegt und seit wann...",
@@ -656,49 +733,87 @@ searchPlaceholder:"Nach Straße oder Problem suchen...",allCategories:"Alle Kate
 loading:"Laden...",noReports:"Keine Meldungen gefunden",noReportsText:"Veröffentlichte Meldungen erscheinen hier.",
 footerText:"Eine engagierte Gemeinschaft beginnt mit Information und Zusammenarbeit.",
 pending:"Ausstehend",progress:"In Bearbeitung",resolved:"Gelöst",support:"Unterstützen",supported:"Unterstützt",
-comments:"Kommentare",writeComment:"Kommentar schreiben...",sendComment:"Senden",noComments:"Noch keine Kommentare.",
+comments:"Kommentare",writeComment:"Kommentar schreiben...",sendComment:"Kommentar senden",noComments:"Noch keine Kommentare.",
 anonymous:"Einwohner",loadingError:"Meldungen konnten nicht geladen werden.",
 cepInvalid:"Bitte eine gültige achtstellige Postleitzahl eingeben.",cepNotFound:"Postleitzahl nicht gefunden. Prüfe sie oder gib die Adresse manuell ein.",
-cepError:"Postleitzahl konnte nicht abgefragt werden.",photoTooLarge:"Das Bild darf höchstens 50 MB groß sein.",
+cepError:"Postleitzahl konnte nicht abgefragt werden. Versuche es erneut oder gib die Adresse manuell ein.",photoTooLarge:"Das Bild darf höchstens 50 MB groß sein.",
 photoInvalid:"Bitte JPG, PNG oder WEBP auswählen.",fillRequired:"Bitte alle Pflichtfelder ausfüllen.",
 published:"Meldung erfolgreich veröffentlicht!",publishError:"Veröffentlichung fehlgeschlagen. Prüfe deine Verbindung.",
 commentError:"Kommentar konnte nicht gesendet werden.",commentSent:"Kommentar gesendet!",supportError:"Unterstützung konnte nicht gespeichert werden.",
 alreadySupported:"Du hast diese Meldung in diesem Browser bereits unterstützt.",
-mapUnavailable:"Karte nicht verfügbar. Du kannst ohne Karte veröffentlichen.",photoUploadError:"Foto konnte nicht hochgeladen werden.",dateUnknown:"Datum unbekannt"
+mapUnavailable:"Karte nicht verfügbar. Du kannst ohne Karte veröffentlichen.",photoUploadError:"Foto konnte nicht hochgeladen werden.",dateUnknown:"Datum unbekannt",
+addressFilled:"Adresse ausgefüllt. Bitte prüfe die Felder!",
+sending:"Wird gesendet...",
+addressUnknown:"Keine Adresse angegeben",
+reportsFound:"Gefundene Meldungen: {n}",
+openMenu:"Menü öffnen",
+searchAria:"Meldungen durchsuchen",
+filterAria:"Nach Kategorie filtern",
+photoAlt:"Foto des Problems",
+previewAlt:"Vorschau des ausgewählten Fotos",
+docTitle:"Minha Rua Tem Voz | Gemeinschaftsforum",
+loadingReports:"Meldungen werden geladen...",
+loadingErrorHint:"Prüfe deine Verbindung und versuche es erneut.",
+setupTitle:"Supabase verbinden",
+setupText:"Füge die URL und den öffentlichen Schlüssel am Anfang des JavaScripts ein, um Meldungen zu laden und zu veröffentlichen.",
+setupMode:"Einrichtungsmodus",
+streetPlaceholder:"Straßenname",
+neighborhoodPlaceholder:"Name des Stadtteils",
+cityPlaceholder:"Deine Stadt",
+statePlaceholder:"Z. B. PR"
 },
 it:{
 home:"Home",report:"Segnala un problema",community:"Comunità",language:"Lingua",
 heroTag:"La tua comunità, la tua voce",heroTitle:"Una città migliore inizia dalla tua voce.",
 heroText:"Segnala i problemi del quartiere e sostieni i miglioramenti della tua comunità.",
 heroButton:"📢 Segnala un problema",statReports:"Segnalazioni pubblicate",statSupport:"Sostegni della comunità",
-formHeading:"Raccontaci cosa succede",formSubheading:"Compila i dati. È semplice e richiede pochi minuti.",
+formHeading:"Raccontaci cosa succede.",formSubheading:"Compila i dati. È semplice e richiede pochi minuti.",
 formTitle:"Segnala un problema",formDescription:"Descrivi la situazione affinché gli altri residenti possano conoscerla e sostenerla.",
 titleLabel:"Titolo del problema",titlePlaceholder:"Es.: Grande buca nella strada principale",
 categoryLabel:"Categoria",chooseCategory:"Scegli una categoria",catRoad:"Buche e pavimentazione",
 catLight:"Illuminazione pubblica",catTrash:"Rifiuti e pulizia",catSewage:"Acqua e servizi igienici",
 catTransport:"Trasporto pubblico",catSafety:"Sicurezza e segnaletica",catAccess:"Accessibilità",catOther:"Altro",
-cepLabel:"CAP (facoltativo)",searchCep:"Cerca",cepHint:"Puoi inserire l'indirizzo manualmente.",
+cepLabel:"Codice postale – CEP (facoltativo)",searchCep:"Cerca",cepHint:"Se non conosci il codice postale, puoi inserire l'indirizzo manualmente.",
 streetLabel:"Via o viale",neighborhoodLabel:"Quartiere",cityLabel:"Città",stateLabel:"Stato",
 addressNote:"📍 La mappa non è obbligatoria. L'indirizzo scritto è sufficiente. Puoi segnare il luogo sulla mappa se vuoi.",
 mapButton:"🗺️ Mostra mappa (facoltativo)",mapHide:"Nascondi mappa",mapHint:"Tocca la mappa per segnare la posizione approssimativa.",
 descriptionLabel:"Descrizione",descriptionPlaceholder:"Spiega cosa è successo, dove si trova il problema e da quanto tempo...",
 photoLabel:"Foto (facoltativa)",photoTitle:"Aggiungi una foto",photoHint:"JPG, PNG o WEBP. Fino a 50 MB.",
-privacyNote:"Non inserire password, documenti, telefoni o dati personali. Evita volti e targhe.",
+privacyNote:"Non inserire password, documenti, numeri di telefono o dati personali. Evita di fotografare volti e targhe.",
 submitButton:"📢 Pubblica segnalazione",feedHeading:"Cosa succede nella tua comunità?",
 feedSubheading:"Consulta i problemi segnalati e sostieni quelli che richiedono attenzione.",
 searchPlaceholder:"Cerca per via o problema...",allCategories:"Tutte le categorie",
 loading:"Caricamento...",noReports:"Nessuna segnalazione trovata",noReportsText:"Le segnalazioni pubblicate appariranno qui.",
 footerText:"Una comunità partecipe inizia con informazione e collaborazione.",
 pending:"In attesa",progress:"In corso",resolved:"Risolto",support:"Sostieni",supported:"Sostenuto",
-comments:"Commenti",writeComment:"Scrivi un commento...",sendComment:"Invia",noComments:"Ancora nessun commento.",
+comments:"Commenti",writeComment:"Scrivi un commento...",sendComment:"Invia commento",noComments:"Ancora nessun commento.",
 anonymous:"Residente",loadingError:"Impossibile caricare le segnalazioni.",
-cepInvalid:"Inserisci un CAP valido di 8 cifre.",cepNotFound:"CAP non trovato. Controlla o inserisci l'indirizzo manualmente.",
-cepError:"Impossibile consultare il CAP.",photoTooLarge:"L'immagine deve essere al massimo di 50 MB.",
+cepInvalid:"Inserisci un codice postale valido di 8 cifre.",cepNotFound:"Codice postale non trovato. Controlla i numeri o inserisci l'indirizzo manualmente.",
+cepError:"Impossibile consultare il codice postale. Riprova o inserisci l'indirizzo manualmente.",photoTooLarge:"L'immagine deve essere al massimo di 50 MB.",
 photoInvalid:"Scegli un'immagine JPG, PNG o WEBP.",fillRequired:"Compila tutti i campi obbligatori.",
 published:"Segnalazione pubblicata!",publishError:"Pubblicazione non riuscita. Controlla la connessione.",
 commentError:"Impossibile inviare il commento.",commentSent:"Commento inviato!",supportError:"Impossibile registrare il sostegno.",
 alreadySupported:"Hai già sostenuto questa segnalazione in questo browser.",
-mapUnavailable:"Mappa non disponibile. Puoi pubblicare senza.",photoUploadError:"Impossibile caricare la foto.",dateUnknown:"Data non disponibile"
+mapUnavailable:"Mappa non disponibile. Puoi pubblicare senza.",photoUploadError:"Impossibile caricare la foto.",dateUnknown:"Data non disponibile",
+addressFilled:"Indirizzo compilato. Controlla i campi!",
+sending:"Invio in corso...",
+addressUnknown:"Indirizzo non indicato",
+reportsFound:"Segnalazioni trovate: {n}",
+openMenu:"Apri menu",
+searchAria:"Cerca segnalazioni",
+filterAria:"Filtra per categoria",
+photoAlt:"Foto del problema",
+previewAlt:"Anteprima della foto selezionata",
+docTitle:"Minha Rua Tem Voz | Forum della comunità",
+loadingReports:"Caricamento delle segnalazioni...",
+loadingErrorHint:"Controlla la connessione e riprova.",
+setupTitle:"Collega Supabase",
+setupText:"Aggiungi l'URL e la chiave pubblica all'inizio del JavaScript per caricare e pubblicare segnalazioni.",
+setupMode:"Modalità di configurazione",
+streetPlaceholder:"Nome della via",
+neighborhoodPlaceholder:"Nome del quartiere",
+cityPlaceholder:"La tua città",
+statePlaceholder:"Es.: PR"
 },
 zh:{
 home:"首页",report:"报告问题",community:"社区",language:"语言",
@@ -710,7 +825,7 @@ formTitle:"报告问题",formDescription:"描述情况，让社区中的其他�
 titleLabel:"问题标题",titlePlaceholder:"例如：主街上有一个大坑",categoryLabel:"类别",
 chooseCategory:"选择类别",catRoad:"道路和坑洞",catLight:"公共照明",catTrash:"垃圾和清洁",
 catSewage:"供水和卫生",catTransport:"公共交通",catSafety:"安全和标志",catAccess:"无障碍设施",catOther:"其他",
-cepLabel:"邮政编码（可选）",searchCep:"搜索",cepHint:"不知道邮政编码也没关系，可以手动填写地址。",
+cepLabel:"邮政编码 CEP（可选）",searchCep:"搜索",cepHint:"不知道邮政编码也没关系，可以手动填写地址。",
 streetLabel:"街道",neighborhoodLabel:"社区",cityLabel:"城市",stateLabel:"州或省",
 addressNote:"📍 发布不需要地图。填写文字地址即可。你也可以选择在地图上标记位置。",
 mapButton:"🗺️ 显示地图（可选）",mapHide:"隐藏地图",mapHint:"点击地图标记问题的大致位置。此操作不是必需的。",
@@ -725,12 +840,31 @@ footerText:"积极参与的社区始于信息与合作。",pending:"待处理",p
 resolved:"已解决",support:"支持",supported:"已支持",comments:"评论",writeComment:"写评论……",
 sendComment:"发送",noComments:"暂无评论。",anonymous:"居民",loadingError:"无法加载报告。",
 cepInvalid:"请输入有效的 8 位邮政编码。",cepNotFound:"未找到邮政编码。请检查或手动填写地址。",
-cepError:"无法查询邮政编码。",photoTooLarge:"图片不能超过 50 MB。",
+cepError:"无法查询邮政编码。请重试或手动填写地址。",photoTooLarge:"图片不能超过 50 MB。",
 photoInvalid:"请选择 JPG、PNG 或 WEBP 图片。",fillRequired:"请填写所有必填项。",
 published:"报告发布成功！",publishError:"无法发布，请检查网络连接。",
 commentError:"无法发送评论。",commentSent:"评论已发送！",supportError:"无法记录支持。",
 alreadySupported:"你已在此浏览器中支持过该报告。",mapUnavailable:"地图暂不可用。你仍然可以不使用地图发布。",
-photoUploadError:"无法上传照片。",dateUnknown:"日期未知"
+photoUploadError:"无法上传照片。",dateUnknown:"日期未知",
+addressFilled:"地址已填写，请检查各项内容！",
+sending:"正在发送……",
+addressUnknown:"未填写地址",
+reportsFound:"找到的报告：{n}",
+openMenu:"打开菜单",
+searchAria:"搜索报告",
+filterAria:"按类别筛选",
+photoAlt:"问题照片",
+previewAlt:"所选照片预览",
+docTitle:"Minha Rua Tem Voz | 社区论坛",
+loadingReports:"正在加载报告……",
+loadingErrorHint:"请检查网络连接后重试。",
+setupTitle:"连接 Supabase",
+setupText:"在 JavaScript 开头添加 URL 和公开密钥，即可加载和发布报告。",
+setupMode:"配置模式",
+streetPlaceholder:"街道名称",
+neighborhoodPlaceholder:"社区名称",
+cityPlaceholder:"你的城市",
+statePlaceholder:"例如：PR"
 },
 ja:{
 home:"ホーム",report:"問題を報告",community:"コミュニティ",language:"言語",
@@ -743,8 +877,8 @@ titleLabel:"問題のタイトル",titlePlaceholder:"例：メインストリー
 categoryLabel:"カテゴリー",chooseCategory:"カテゴリーを選択",catRoad:"道路・舗装",
 catLight:"街灯",catTrash:"ごみ・清掃",catSewage:"水道・衛生",catTransport:"公共交通",
 catSafety:"安全・標識",catAccess:"バリアフリー",catOther:"その他",
-cepLabel:"郵便番号（任意）",searchCep:"検索",cepHint:"郵便番号が分からない場合は住所を手入力できます。",
-streetLabel:"通り・道路",neighborhoodLabel:"地域",cityLabel:"市区町村",stateLabel:"都道府県",
+cepLabel:"郵便番号 CEP（任意）",searchCep:"検索",cepHint:"郵便番号が分からない場合は住所を手入力できます。",
+streetLabel:"通り・道路",neighborhoodLabel:"地区",cityLabel:"市区町村",stateLabel:"州",
 addressNote:"📍 投稿に地図は必要ありません。住所の入力だけで十分です。必要なら地図に場所を記せます。",
 mapButton:"🗺️ 地図を表示（任意）",mapHide:"地図を隠す",mapHint:"地図をタップしておおよその場所を指定できます。任意です。",
 descriptionLabel:"説明",descriptionPlaceholder:"何が起きたか、問題の場所、いつから続いているかを説明してください……",
@@ -759,12 +893,31 @@ pending:"未対応",progress:"対応中",resolved:"解決済み",support:"応援
 comments:"コメント",writeComment:"コメントを書く……",sendComment:"送信",noComments:"まだコメントはありません。",
 anonymous:"住民",loadingError:"報告を読み込めませんでした。",cepInvalid:"8桁の郵便番号を入力してください。",
 cepNotFound:"郵便番号が見つかりません。確認するか住所を手入力してください。",
-cepError:"郵便番号を検索できませんでした。",photoTooLarge:"画像は50 MB以下にしてください。",
+cepError:"郵便番号を検索できませんでした。もう一度試すか、住所を手入力してください。",photoTooLarge:"画像は50 MB以下にしてください。",
 photoInvalid:"JPG、PNG、WEBP画像を選択してください。",fillRequired:"必須項目をすべて入力してください。",
 published:"報告を投稿しました！",publishError:"投稿できませんでした。接続を確認してください。",
 commentError:"コメントを送信できませんでした。",commentSent:"コメントを送信しました！",
 supportError:"応援を登録できませんでした。",alreadySupported:"このブラウザーでは既に応援しています。",
-mapUnavailable:"地図を利用できません。地図なしで投稿できます。",photoUploadError:"写真をアップロードできませんでした。",dateUnknown:"日付不明"
+mapUnavailable:"地図を利用できません。地図なしで投稿できます。",photoUploadError:"写真をアップロードできませんでした。",dateUnknown:"日付不明",
+addressFilled:"住所を入力しました。内容を確認してください！",
+sending:"送信中……",
+addressUnknown:"住所未入力",
+reportsFound:"見つかった報告：{n}件",
+openMenu:"メニューを開く",
+searchAria:"報告を検索",
+filterAria:"カテゴリーで絞り込む",
+photoAlt:"問題の写真",
+previewAlt:"選択した写真のプレビュー",
+docTitle:"Minha Rua Tem Voz | コミュニティフォーラム",
+loadingReports:"報告を読み込み中……",
+loadingErrorHint:"接続を確認して、もう一度お試しください。",
+setupTitle:"Supabase に接続",
+setupText:"報告を読み込んで投稿するには、JavaScript の先頭に URL と公開キーを追加してください。",
+setupMode:"設定モード",
+streetPlaceholder:"通りの名前",
+neighborhoodPlaceholder:"地区の名前",
+cityPlaceholder:"市区町村",
+statePlaceholder:"例：PR"
 },
 hi:{
 home:"होम",report:"समस्या दर्ज करें",community:"समुदाय",language:"भाषा",
@@ -777,7 +930,7 @@ titleLabel:"समस्या का शीर्षक",titlePlaceholder:"उ�
 categoryLabel:"श्रेणी",chooseCategory:"श्रेणी चुनें",catRoad:"सड़क और गड्ढे",catLight:"सार्वजनिक रोशनी",
 catTrash:"कचरा और सफाई",catSewage:"पानी और स्वच्छता",catTransport:"सार्वजनिक परिवहन",
 catSafety:"सुरक्षा और संकेत",catAccess:"सुगम्यता",catOther:"अन्य",
-cepLabel:"पिन कोड (वैकल्पिक)",searchCep:"खोजें",cepHint:"पिन कोड नहीं पता तो पता स्वयं लिख सकते हैं।",
+cepLabel:"पोस्टल कोड – CEP (वैकल्पिक)",searchCep:"खोजें",cepHint:"पोस्टल कोड नहीं पता तो पता स्वयं लिख सकते हैं।",
 streetLabel:"सड़क",neighborhoodLabel:"इलाका",cityLabel:"शहर",stateLabel:"राज्य",
 addressNote:"📍 रिपोर्ट प्रकाशित करने के लिए नक्शा ज़रूरी नहीं है। लिखा हुआ पता पर्याप्त है। चाहें तो नक्शे पर स्थान चुनें।",
 mapButton:"🗺️ नक्शा दिखाएँ (वैकल्पिक)",mapHide:"नक्शा छिपाएँ",mapHint:"समस्या का अनुमानित स्थान चुनने के लिए नक्शे पर टैप करें।",
@@ -791,15 +944,34 @@ noReports:"कोई रिपोर्ट नहीं मिली",noReportsT
 footerText:"सक्रिय समुदाय की शुरुआत जानकारी और सहयोग से होती है।",
 pending:"लंबित",progress:"काम जारी",resolved:"हल हो गया",support:"समर्थन करें",supported:"समर्थित",
 comments:"टिप्पणियाँ",writeComment:"टिप्पणी लिखें...",sendComment:"भेजें",noComments:"अभी कोई टिप्पणी नहीं।",
-anonymous:"निवासी",loadingError:"रिपोर्ट लोड नहीं हो सकीं।",cepInvalid:"8 अंकों का सही पिन कोड दर्ज करें।",
-cepNotFound:"पिन कोड नहीं मिला। जाँचें या पता स्वयं लिखें।",cepError:"पिन कोड खोजा नहीं जा सका।",
+anonymous:"निवासी",loadingError:"रिपोर्ट लोड नहीं हो सकीं।",cepInvalid:"8 अंकों का सही पोस्टल कोड दर्ज करें।",
+cepNotFound:"पोस्टल कोड नहीं मिला। जाँचें या पता स्वयं लिखें।",cepError:"पोस्टल कोड खोजा नहीं जा सका। फिर से कोशिश करें या पता स्वयं लिखें।",
 photoTooLarge:"फोटो अधिकतम 50 MB की होनी चाहिए।",photoInvalid:"JPG, PNG या WEBP चुनें।",
 fillRequired:"सभी ज़रूरी फ़ील्ड भरें।",published:"रिपोर्ट सफलतापूर्वक प्रकाशित हुई!",
 publishError:"प्रकाशित नहीं हो सका। इंटरनेट कनेक्शन जाँचें।",commentError:"टिप्पणी भेजी नहीं जा सकी।",
 commentSent:"टिप्पणी भेज दी गई!",supportError:"समर्थन दर्ज नहीं हो सका।",
 alreadySupported:"आप इस ब्राउज़र में पहले ही समर्थन कर चुके हैं।",
 mapUnavailable:"नक्शा उपलब्ध नहीं है। आप बिना नक्शे के प्रकाशित कर सकते हैं।",
-photoUploadError:"फोटो अपलोड नहीं हो सकी।",dateUnknown:"तारीख उपलब्ध नहीं"
+photoUploadError:"फोटो अपलोड नहीं हो सकी।",dateUnknown:"तारीख उपलब्ध नहीं",
+addressFilled:"पता भर दिया गया है। कृपया जानकारी जाँच लें!",
+sending:"भेजा जा रहा है...",
+addressUnknown:"पता नहीं दिया गया",
+reportsFound:"मिली रिपोर्ट: {n}",
+openMenu:"मेनू खोलें",
+searchAria:"रिपोर्ट खोजें",
+filterAria:"श्रेणी के अनुसार छाँटें",
+photoAlt:"समस्या की फोटो",
+previewAlt:"चुनी गई फोटो का पूर्वावलोकन",
+docTitle:"Minha Rua Tem Voz | सामुदायिक मंच",
+loadingReports:"रिपोर्ट लोड हो रही हैं...",
+loadingErrorHint:"अपना इंटरनेट कनेक्शन जाँचें और फिर से कोशिश करें।",
+setupTitle:"Supabase कनेक्ट करें",
+setupText:"रिपोर्ट लोड और प्रकाशित करने के लिए JavaScript की शुरुआत में URL और सार्वजनिक कुंजी जोड़ें।",
+setupMode:"सेटअप मोड",
+streetPlaceholder:"सड़क का नाम",
+neighborhoodPlaceholder:"इलाके का नाम",
+cityPlaceholder:"आपका शहर",
+statePlaceholder:"उदाहरण: PR"
 },
 ar:{
 home:"الرئيسية",report:"الإبلاغ عن مشكلة",community:"المجتمع",language:"اللغة",
@@ -812,12 +984,12 @@ titleLabel:"عنوان المشكلة",titlePlaceholder:"مثال: حفرة كب
 categoryLabel:"الفئة",chooseCategory:"اختر فئة",catRoad:"الطرق والحفر",catLight:"إنارة الشوارع",
 catTrash:"النفايات والنظافة",catSewage:"المياه والصرف الصحي",catTransport:"النقل العام",
 catSafety:"السلامة واللافتات",catAccess:"إمكانية الوصول",catOther:"أخرى",
-cepLabel:"الرمز البريدي (اختياري)",searchCep:"بحث",cepHint:"يمكنك كتابة العنوان يدويًا إذا لم تعرف الرمز البريدي.",
+cepLabel:"الرمز البريدي CEP (اختياري)",searchCep:"بحث",cepHint:"يمكنك كتابة العنوان يدويًا إذا لم تعرف الرمز البريدي.",
 streetLabel:"الشارع",neighborhoodLabel:"الحي",cityLabel:"المدينة",stateLabel:"الولاية",
 addressNote:"📍 لا تحتاج إلى الخريطة للنشر. العنوان المكتوب كافٍ. يمكنك تحديد الموقع على الخريطة اختياريًا.",
 mapButton:"🗺️ عرض الخريطة (اختياري)",mapHide:"إخفاء الخريطة",mapHint:"اضغط على الخريطة لتحديد الموقع التقريبي. هذا اختياري.",
 descriptionLabel:"الوصف",descriptionPlaceholder:"اشرح ما حدث وأين توجد المشكلة ومنذ متى...",
-photoLabel:"صورة (اختياري)",photoTitle:"إضافة صورة",photoHint:"JPG أو PNG أو WEBP. حتى 3 ميغابايت.",
+photoLabel:"صورة (اختياري)",photoTitle:"إضافة صورة",photoHint:"JPG أو PNG أو WEBP. حتى 50 ميغابايت.",
 privacyNote:"لا تكتب كلمات مرور أو مستندات أو أرقام هواتف أو بيانات شخصية. تجنب تصوير الوجوه ولوحات السيارات.",
 submitButton:"📢 نشر البلاغ",feedHeading:"ماذا يحدث في مجتمعك؟",
 feedSubheading:"اطلع على المشكلات المسجلة وادعم ما يحتاج إلى اهتمام.",
@@ -828,13 +1000,32 @@ pending:"قيد الانتظار",progress:"قيد المعالجة",resolved:"�
 comments:"التعليقات",writeComment:"اكتب تعليقًا...",sendComment:"إرسال",noComments:"لا توجد تعليقات بعد.",
 anonymous:"مقيم",loadingError:"تعذر تحميل البلاغات.",cepInvalid:"أدخل رمزًا بريديًا صحيحًا من 8 أرقام.",
 cepNotFound:"لم يتم العثور على الرمز البريدي. تحقق منه أو اكتب العنوان يدويًا.",
-cepError:"تعذر البحث عن الرمز البريدي.",photoTooLarge:"يجب ألا يتجاوز حجم الصورة 3 ميغابايت.",
+cepError:"تعذر البحث عن الرمز البريدي. حاول مرة أخرى أو اكتب العنوان يدويًا.",photoTooLarge:"يجب ألا يتجاوز حجم الصورة 50 ميغابايت.",
 photoInvalid:"اختر صورة JPG أو PNG أو WEBP.",fillRequired:"املأ جميع الحقول المطلوبة.",
 published:"تم نشر البلاغ بنجاح!",publishError:"تعذر النشر. تحقق من الاتصال بالإنترنت.",
 commentError:"تعذر إرسال التعليق.",commentSent:"تم إرسال التعليق!",supportError:"تعذر تسجيل الدعم.",
 alreadySupported:"لقد دعمت هذا البلاغ بالفعل من هذا المتصفح.",
 mapUnavailable:"الخريطة غير متاحة الآن. يمكنك النشر دون استخدامها.",
-photoUploadError:"تعذر تحميل الصورة.",dateUnknown:"التاريخ غير متاح"
+photoUploadError:"تعذر تحميل الصورة.",dateUnknown:"التاريخ غير متاح",
+addressFilled:"تم ملء العنوان. يرجى مراجعة الحقول!",
+sending:"جارٍ الإرسال...",
+addressUnknown:"العنوان غير محدد",
+reportsFound:"البلاغات التي تم العثور عليها: {n}",
+openMenu:"فتح القائمة",
+searchAria:"البحث في البلاغات",
+filterAria:"التصفية حسب الفئة",
+photoAlt:"صورة المشكلة",
+previewAlt:"معاينة الصورة المختارة",
+docTitle:"Minha Rua Tem Voz | منتدى المجتمع",
+loadingReports:"جارٍ تحميل البلاغات...",
+loadingErrorHint:"تحقق من اتصالك بالإنترنت وحاول مرة أخرى.",
+setupTitle:"اربط Supabase",
+setupText:"أضف عنوان URL والمفتاح العام في بداية JavaScript لتحميل البلاغات ونشرها.",
+setupMode:"وضع الإعداد",
+streetPlaceholder:"اسم الشارع",
+neighborhoodPlaceholder:"اسم الحي",
+cityPlaceholder:"مدينتك",
+statePlaceholder:"مثال: PR"
 }
 };
 
@@ -853,20 +1044,45 @@ function escapeHTML(value){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   })[char]);
 }
+// As categorias ficam salvas em português no banco; aqui ligamos cada uma à sua tradução.
+const categoryKeys={
+  "Pavimentação":"catRoad","Iluminação":"catLight","Lixo e limpeza":"catTrash","Saneamento":"catSewage",
+  "Transporte":"catTransport","Segurança":"catSafety","Acessibilidade":"catAccess","Outro":"catOther"
+};
+function categoryLabel(value){
+  return categoryKeys[value]?t(categoryKeys[value]):(value||t("catOther"));
+}
+function savedLanguage(){
+  try{
+    const saved=localStorage.getItem("mrtv-language");
+    return translations[saved]?saved:"pt";
+  }catch{return "pt";}
+}
 function setLanguage(language){
   currentLanguage=translations[language]?language:"pt";
+  try{localStorage.setItem("mrtv-language",currentLanguage);}catch{}
   document.documentElement.lang={
     pt:"pt-BR",en:"en",es:"es",fr:"fr",de:"de",it:"it",zh:"zh-CN",
     ja:"ja",hi:"hi",ar:"ar"
   }[currentLanguage];
   document.documentElement.dir=currentLanguage==="ar"?"rtl":"ltr";
+  document.title=t("docTitle");
   document.querySelectorAll("[data-i18n]").forEach(el=>{
-    const key=el.dataset.i18n;
-    if(translations[currentLanguage][key])el.textContent=t(key);
+    el.textContent=t(el.dataset.i18n);
   });
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
     el.placeholder=t(el.dataset.i18nPlaceholder);
   });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach(el=>{
+    el.setAttribute("aria-label",t(el.dataset.i18nAriaLabel));
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach(el=>{
+    el.alt=t(el.dataset.i18nAlt);
+  });
+  // O botão do mapa mostra "Ocultar" se o mapa já estiver aberto.
+  if($("map").style.display==="block")$("mapToggle").textContent=t("mapHide");
+  // Não sobrescreve o texto "Enviando..." durante um envio.
+  if($("submitButton").disabled)$("submitButton").textContent=t("sending");
   $("language").value=currentLanguage;
   renderFeed();
 }
@@ -906,7 +1122,7 @@ async function searchCep(){
     $("neighborhood").value=data.bairro||$("neighborhood").value;
     $("city").value=data.localidade||$("city").value;
     $("state").value=data.uf||$("state").value;
-    showToast("Endereço preenchido. Confira os campos!");
+    showToast(t("addressFilled"));
     clearTimeout(geocodeTimer);
     locateAddress(cep);
   }catch(error){
@@ -1044,10 +1260,27 @@ function safePhoto(url){
 }
 
 function renderFeed(){
+  const grid=$("feedGrid");
+  if(feedState==="loading"){
+    $("feedCount").textContent=t("loadingReports");
+    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loading"))}</strong></div>`;
+    return;
+  }
+  if(feedState==="setup"){
+    $("feedCount").textContent=t("setupMode");
+    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("setupTitle"))}</strong>${escapeHTML(t("setupText"))}</div>`;
+    updateStats();
+    return;
+  }
+  if(feedState==="error"){
+    $("feedCount").textContent="";
+    grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loadingError"))}</strong>${escapeHTML(t("loadingErrorHint"))}</div>`;
+    return;
+  }
   const search=$("searchInput").value.trim().toLocaleLowerCase();
   const category=$("categoryFilter").value;
   const filtered=reports.filter(item=>{
-    const text=[item.title,item.description,item.street,item.neighborhood,item.city,item.category]
+    const text=[item.title,item.description,item.street,item.neighborhood,item.city,item.category,categoryLabel(item.category)]
       .join(" ").toLocaleLowerCase();
     return (!search||text.includes(search))&&(!category||item.category===category);
   }).sort((a,b)=>{
@@ -1055,8 +1288,7 @@ function renderFeed(){
     if(supportDifference!==0)return supportDifference;
     return new Date(b.created_at||0)-new Date(a.created_at||0);
   });
-  $("feedCount").textContent=`${filtered.length} ${currentLanguage==="pt"?"relato(s) encontrado(s)": "report(s)"}`;
-  const grid=$("feedGrid");
+  $("feedCount").textContent=t("reportsFound").replace("{n}",filtered.length);
   if(!filtered.length){
     grid.innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("noReports"))}</strong>${escapeHTML(t("noReportsText"))}</div>`;
     updateStats();
@@ -1070,13 +1302,13 @@ function renderFeed(){
     return `
       <article class="issue-card" data-id="${escapeHTML(item.id)}">
         <div class="card-top">
-          <span class="category-label">${escapeHTML(item.category||"Outro")}</span>
+          <span class="category-label">${escapeHTML(categoryLabel(item.category))}</span>
           <span class="status ${status.className}">${escapeHTML(status.label)}</span>
         </div>
         <h3>${escapeHTML(item.title)}</h3>
-        <p class="issue-address">📍 ${escapeHTML(address||"Endereço não informado")}</p>
+        <p class="issue-address">📍 ${escapeHTML(address||t("addressUnknown"))}</p>
         <p class="issue-description">${escapeHTML(item.description)}</p>
-        ${photo?`<img class="issue-image" src="${escapeHTML(photo)}" alt="Foto do problema" loading="lazy">`:""}
+        ${photo?`<img class="issue-image" src="${escapeHTML(photo)}" alt="${escapeHTML(t("photoAlt"))}" loading="lazy">`:""}
         <p class="issue-meta">${escapeHTML(formatDate(item.created_at))}</p>
         <div class="card-actions">
           <button class="support-btn ${supported?"supported":""}" data-action="support" data-id="${escapeHTML(item.id)}" ${supported?"disabled":""}>
@@ -1101,18 +1333,19 @@ $("categoryFilter").addEventListener("change",renderFeed);
 async function loadReports(){
   if(!db){
     reports=[];
-    $("feedGrid").innerHTML=`<div class="empty-state"><strong>Conecte o Supabase</strong>Adicione a URL e a chave pública no início do JavaScript para carregar e publicar relatos.</div>`;
-    $("feedCount").textContent="Modo de configuração";
-    updateStats();
+    feedState="setup";
+    renderFeed();
     return;
   }
   const {data,error}=await db.from("complaints").select("*").order("created_at",{ascending:false}).limit(100);
   if(error){
-  console.error("ERRO AO CARREGAR RELATOS:", error);
-    $("feedGrid").innerHTML=`<div class="empty-state"><strong>${escapeHTML(t("loadingError"))}</strong>Confira a configuração do banco de dados.</div>`;
+    console.error("ERRO AO CARREGAR RELATOS:", error);
+    feedState="error";
+    renderFeed();
     return;
   }
   reports=data||[];
+  feedState="ready";
   renderFeed();
 }
 
@@ -1140,7 +1373,7 @@ $("reportForm").addEventListener("submit",async event=>{
   const form=event.currentTarget;
 
   if(!db){
-    showToast("Configure o Supabase antes de publicar.");
+    showToast(t("setupTitle"));
     return;
   }
   if(!form.reportValidity()){
@@ -1156,11 +1389,19 @@ $("reportForm").addEventListener("submit",async event=>{
 
   const button=$("submitButton");
   button.disabled=true;
-  button.textContent="Enviando...";
+  button.textContent=t("sending");
 
   try{
     let photoUrl=null;
-    if(file)photoUrl=await uploadPhoto(file);
+    if(file){
+      try{
+        photoUrl=await uploadPhoto(file);
+      }catch(uploadError){
+        console.error("ERRO AO ENVIAR FOTO:",uploadError);
+        showToast(t("photoUploadError"));
+        return;
+      }
+    }
 
     const record={
       title:$("title").value.trim(),
@@ -1198,7 +1439,7 @@ $("reportForm").addEventListener("submit",async event=>{
     $("comunidade").scrollIntoView({behavior:"smooth"});
   }catch(error){
     console.error("ERRO AO PUBLICAR:",error);
-    showToast(error.message||t("publishError"));
+    showToast(t("publishError"));
   }finally{
     button.disabled=false;
     button.textContent=t("submitButton");
@@ -1294,7 +1535,7 @@ $("feedGrid").addEventListener("submit",async event=>{
   }finally{button.disabled=false;}
 });
 
-setLanguage("pt");
+setLanguage(savedLanguage());
 loadReports();
 </script>
 </body>
