@@ -263,6 +263,10 @@ textarea.input{min-height:110px;resize:vertical}
 .top-list li b{display:block;line-height:1.3;overflow-wrap:anywhere}
 .top-list li small{color:var(--muted)}
 .panel-empty{font-size:.86rem;color:var(--muted)}
+.section-head p.live{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;color:var(--green);background:var(--green-soft);padding:6px 12px;border-radius:999px;margin-top:16px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,157,107,.5)}70%{box-shadow:0 0 0 8px rgba(31,157,107,0)}100%{box-shadow:0 0 0 0 rgba(31,157,107,0)}}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
 .top-list.is-empty li:before{display:none}
 
 /* Comércio */
@@ -594,6 +598,7 @@ textarea.input{min-height:110px;resize:vertical}
       <span class="eyebrow" data-i18n="panelEyebrow">Painel de impacto</span>
       <h2 data-i18n="panelTitle">Dados para quem decide</h2>
       <p data-i18n="panelText">Uma visão organizada das demandas da cidade, pensada para a prefeitura, a ACICLA e as associações de bairro.</p>
+      <p class="live"><span class="live-dot"></span><span id="liveStatus"></span></p>
     </div>
     <div class="dash">
       <div class="panel reveal">
@@ -748,6 +753,7 @@ panelText:"Uma visão organizada das demandas da cidade, pensada para a prefeitu
 barsTitle:"Relatos por categoria",barsText:"Quais problemas mais aparecem na cidade.",
 donutTitle:"Situação dos relatos",donutText:"Quanto já foi resolvido.",
 topTitle:"Prioridades da comunidade",topText:"Os relatos com mais apoios.",panelEmpty:"Os dados aparecem assim que houver relatos.",
+liveStatus:"Atualização automática · última às {time}",
 bizEyebrow:"Para o comércio local",bizTitle:"Rua bem cuidada é rua com mais clientes",
 bizText:"Calçadas seguras, iluminação e limpeza trazem movimento para o comércio. Empresas que apoiam o projeto mostram compromisso com o bairro onde estão.",
 biz1Bold:"Selo \"Empresa Amiga do Bairro\"",biz1Text:"para exibir na vitrine e nas redes sociais.",
@@ -817,6 +823,7 @@ panelText:"An organized view of the city's needs, designed for the city hall, AC
 barsTitle:"Reports by category",barsText:"Which problems appear most often in the city.",
 donutTitle:"Report status",donutText:"How much has already been solved.",
 topTitle:"Community priorities",topText:"The most supported reports.",panelEmpty:"Data will appear as soon as there are reports.",
+liveStatus:"Updates automatically · last at {time}",
 bizEyebrow:"For local businesses",bizTitle:"A well-kept street means more customers",
 bizText:"Safe sidewalks, lighting and clean streets bring more people to local shops. Businesses that support the project show commitment to their neighborhood.",
 biz1Bold:"\"Neighborhood-Friendly Business\" seal",biz1Text:"to display in the shop window and on social media.",
@@ -886,6 +893,7 @@ panelText:"Una visión organizada de las necesidades de la ciudad, pensada para 
 barsTitle:"Informes por categoría",barsText:"Qué problemas aparecen más en la ciudad.",
 donutTitle:"Estado de los informes",donutText:"Cuánto ya se ha resuelto.",
 topTitle:"Prioridades de la comunidad",topText:"Los informes con más apoyos.",panelEmpty:"Los datos aparecerán en cuanto haya informes.",
+liveStatus:"Actualización automática · última a las {time}",
 bizEyebrow:"Para el comercio local",bizTitle:"Una calle cuidada es una calle con más clientes",
 bizText:"Aceras seguras, iluminación y limpieza traen movimiento al comercio. Las empresas que apoyan el proyecto muestran su compromiso con el barrio.",
 biz1Bold:"Sello \"Empresa Amiga del Barrio\"",biz1Text:"para mostrar en el escaparate y en las redes sociales.",
@@ -1072,14 +1080,21 @@ $("language").addEventListener("change", e => setLanguage(e.target.value));
    NÚMEROS DO TOPO
    ===================================================================== */
 function animateNumber(el, to){
+  // Cada nova animação cancela a anterior, para o número final ser sempre o valor real
+  const token = (el._animToken || 0) + 1;
+  el._animToken = token;
+  el.dataset.value = to;
   const from = Number(el.textContent) || 0, start = performance.now(), dur = 900;
-  if(from === to){ el.textContent = to; return; }
+  if(from === to || document.hidden || window.matchMedia("(prefers-reduced-motion: reduce)").matches){ el.textContent = to; return; }
   const step = now => {
+    if(el._animToken !== token) return;
     const p = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(from + (to - from) * e);
+    el.textContent = p < 1 ? Math.round(from + (to - from) * e) : to;
     if(p < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
+  // Garantia: se a animação não rodar (aba em segundo plano), fixa o valor real
+  setTimeout(() => { if(el._animToken === token) el.textContent = to; }, dur + 200);
 }
 function updateStats(){
   animateNumber($("stReports"), reports.length);
@@ -1186,6 +1201,22 @@ function supportersText(n){
 }
 function renderCards(){
   const grid = $("cards");
+  // Guarda comentários que estão sendo digitados, para não perder o texto quando a lista se atualizar
+  const drafts = {};
+  let focusedDraft = null;
+  grid.querySelectorAll(".comment-form").forEach(form => {
+    const field = form.elements.comment;
+    if(field && field.value) drafts[form.dataset.id] = field.value;
+    if(field && document.activeElement === field) focusedDraft = form.dataset.id;
+  });
+  renderCardsInner(grid);
+  grid.querySelectorAll(".comment-form").forEach(form => {
+    const field = form.elements.comment;
+    if(field && drafts[form.dataset.id]) field.value = drafts[form.dataset.id];
+    if(field && focusedDraft === form.dataset.id) field.focus();
+  });
+}
+function renderCardsInner(grid){
   if(feedState === "loading"){
     $("feedCount").textContent = t("loadingReports");
     grid.innerHTML = `<div class="empty"><b>${esc(t("loading"))}</b></div>`;
@@ -1378,7 +1409,7 @@ function renderDash(){
     `<li><span><b>${esc(r.title)}</b><small>${esc(r.neighborhood || catLabel(r.category))} · 🧡 ${supportsOf(r)} ${esc(t("supportsWord"))}</small></span></li>`).join("");
 }
 
-function refreshAll(){ renderCards(); renderMap(); renderDash(); updateStats(); }
+function refreshAll(){ renderCards(); renderMap(); renderDash(); updateStats(); renderLiveStatus(); }
 
 /* =====================================================================
    CARREGAR RELATOS DO BANCO
@@ -1394,9 +1425,63 @@ async function loadReports(){
   }
   reports = data || [];
   feedState = "ready";
+  lastUpdate = new Date();
   refreshAll();
   fitMap();
   geocodeMissing();
+}
+
+/* =====================================================================
+   ATUALIZAÇÃO AUTOMÁTICA
+   - Tempo real: o Supabase avisa quando um relato é criado ou alterado.
+   - Garantia: confere de novo a cada 30 s e quando a pessoa volta para a aba.
+   ===================================================================== */
+let lastUpdate = null, refreshing = false, realtimeTimer = null;
+const AUTO_REFRESH_MS = 30000;
+async function silentRefresh(){
+  if(refreshing || !db || feedState === "loading" || document.hidden) return;
+  refreshing = true;
+  try{
+    const {data, error} = await db.from("complaints").select("*").order("created_at", {ascending:false}).limit(200);
+    if(error) throw error;
+    const fresh = data || [];
+    const changed = JSON.stringify(fresh) !== JSON.stringify(reports);
+    lastUpdate = new Date();
+    if(changed){
+      reports = fresh;
+      feedState = "ready";
+      refreshAll();
+      geocodeMissing();
+    }else{
+      renderLiveStatus();
+    }
+    openComments.forEach(id => { if($("comments-list-" + id)) loadComments(id); });
+  }catch(error){
+    console.error("ERRO NA ATUALIZAÇÃO AUTOMÁTICA:", error);
+  }finally{
+    refreshing = false;
+  }
+}
+function renderLiveStatus(){
+  const el = $("liveStatus");
+  if(!el) return;
+  el.textContent = lastUpdate
+    ? t("liveStatus").replace("{time}", lastUpdate.toLocaleTimeString(locale(), {hour:"2-digit", minute:"2-digit", second:"2-digit"}))
+    : t("loadingReports");
+}
+function startAutoRefresh(){
+  setInterval(silentRefresh, AUTO_REFRESH_MS);
+  document.addEventListener("visibilitychange", () => { if(!document.hidden) silentRefresh(); });
+  if(!db) return;
+  try{
+    const onChange = () => { clearTimeout(realtimeTimer); realtimeTimer = setTimeout(silentRefresh, 800); };
+    db.channel("mrtv-live")
+      .on("postgres_changes", {event:"*", schema:"public", table:"complaints"}, onChange)
+      .on("postgres_changes", {event:"*", schema:"public", table:"complaint_comments"}, onChange)
+      .subscribe();
+  }catch(error){
+    console.error("TEMPO REAL INDISPONÍVEL (seguindo com a atualização a cada 30 s):", error);
+  }
 }
 
 /* =====================================================================
@@ -1606,6 +1691,7 @@ initCityMap();
 initFormMap();
 setLanguage(savedLanguage());
 loadReports();
+startAutoRefresh();
 </script>
 </body>
 </html>
